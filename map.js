@@ -57,6 +57,7 @@ function applyCamera() {
   pane.style.backgroundPosition = `${camera.x}px ${camera.y}px`;
   const dotSpace = 22 * camera.scale;
   pane.style.backgroundSize = `${dotSpace}px ${dotSpace}px`;
+  pane.style.setProperty('--handle-inverse',1/camera.scale);
   const zoom = document.getElementById('zoom-value');
   if (zoom) zoom.textContent = Math.round(camera.scale * 100) + '%';
   drawMinimap();
@@ -80,7 +81,9 @@ function revealNode(n) {
 }
 function cardMarkup(n) {
   const selected = n.id === ui.selected, b = shape(n), pos=pointFor(n);
-  const outputs = project().edges.filter(e => e.from === n.id).length;
+  const outgoing = project().edges.filter(e=>e.from===n.id), outputs=outgoing.length;
+  const exits=outgoing.map(e=>nodeById(e.to)).filter(target=>target.chapter!==n.chapter);
+  const chapterBadge=exits.length===1?'Глава '+(project().chapters.findIndex(c=>c.id===exits[0].chapter)+1):'В другие главы';
   const footer = n.type === 'choice' ? icon('branch',13) + countWords(outputs,['вариант','варианта','вариантов'])
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
@@ -91,22 +94,23 @@ function cardMarkup(n) {
     <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
     <h3>${escapeHtml(n.title || 'Без названия')}</h3>
     ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}</div>
-    <button class="port in" data-action="port-in" data-id="${idAttr(n.id)}" tabindex="-1" aria-label="Вход узла"></button>
-    <button class="port out" data-action="port-out" data-id="${idAttr(n.id)}" tabindex="-1" title="Создать переход" aria-label="Создать переход"></button>
+    ${exits.length?`<button class="chapter-exit" data-action="other-chapters" data-id="${idAttr(n.id)}" title="Перейти к продолжению в другой главе">${icon('layers',11)}${chapterBadge}${icon('arrow',11)}</button>`:''}
+    ${handleMarkup(n)}
   </article>`;
 }
 function renderMap() {
   const nodes = chapterNodes();
   prepareNarrowMap(nodes);
   document.getElementById('workspace').innerHTML = `<section class="map-pane" id="map-pane" aria-label="Интерактивная карта сюжета" tabindex="0">
-    <div id="world" class="world"><svg id="edges" class="edge-layer" aria-hidden="true"></svg><div id="edge-labels"></div><div id="nodes">${nodes.map(cardMarkup).join('')}</div></div>
+    <div id="world" class="world"><svg id="edges" class="edge-layer" aria-hidden="true"></svg><div id="edge-labels"></div><div id="nodes">${nodes.map(cardMarkup).join('')}</div><svg class="edge-layer ghost-layer" aria-hidden="true"><path id="connector-preview"/></svg></div>
     <div class="canvas-tools floating" role="toolbar" aria-label="Инструменты карты">
       ${iconButton('tool','pointer','Выделение (V)','data-tool="pointer"') }
       ${iconButton('tool','hand','Перемещение карты (H)','data-tool="hand"')}
       <span class="tool-divider"></span>${iconButton('tool','link','Связать узлы (C)','data-tool="link"')}
     </div>
     <div id="link-note" class="link-note" hidden></div>
-    <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel')}</button>
+    ${nodes.length?'<span class="canvas-hint">Нажмите стрелку у узла, чтобы добавить ветку. Потяните, чтобы соединить.</span>':''}
+    <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
     ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся история?</h3><p>Добавьте первую сцену этой главы.</p><button class="btn primary" data-action="add-node">'+icon('plus',16)+'Добавить узел</button></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
@@ -118,7 +122,13 @@ function renderMap() {
   pane.addEventListener('pointerup',endMapDrag);
   pane.addEventListener('pointercancel',cancelMapDrag);
   pane.addEventListener('wheel',wheelMap,{passive:false});
-  pane.addEventListener('dblclick',e => { if (e.target === pane && ui.tool === 'pointer') { const r=pane.getBoundingClientRect(); openNodeForm(null,{x:(e.clientX-r.left-camera.x)/camera.scale,y:(e.clientY-r.top-camera.y)/camera.scale}); } });
+  pane.addEventListener('lostpointercapture',e=>{if(e.target===pane&&connectorDrag?.pointer===e.pointerId&&!pane.hasPointerCapture(e.pointerId))cancelConnector();});
+  pane.addEventListener('dblclick',e=>{
+    if(ui.tool!=='pointer'||e.target.closest('button,input,[data-action]'))return;
+    const card=e.target.closest('.node-card');
+    if(card){renameOnCard(nodeById(card.dataset.node));return;}
+    if(e.target===pane)openPalette(null,'right',worldPoint(e.clientX,e.clientY),e.clientX,e.clientY);
+  });
   mapResize?.disconnect();
   lastPaneSize = {pane,w:pane.clientWidth,h:pane.clientHeight};
   mapResize = new ResizeObserver(() => {
@@ -129,7 +139,9 @@ function renderMap() {
   });
   mapResize.observe(pane);
 }
-function wire(n1,n2) {
+function wire(n1,n2,edge) {
+  const pair=edge?.ports?.[narrowMap.matches?'narrow':'wide'];
+  if(pair)return bezierWire(anchorPoint(n1,pair[0]),anchorPoint(n2,pair[1]),pair[0],pair[1]);
   const a=shape(n1), b=shape(n2);
   if(narrowMap.matches) {
     const from=pointFor(n1),to=pointFor(n2),x=from.x+22,y=from.y+a.h;
@@ -150,12 +162,13 @@ function wire(n1,n2) {
 }
 function drawEdges() {
   const layer=document.getElementById('edges'), labelLayer=document.getElementById('edge-labels'); if (!layer) return;
-  const paths=[], labels=[];
+  const markers=Object.entries(NODE_TYPES).map(([type,t])=>`<marker id="tip-${type}" viewBox="0 0 8 8" refX="7.6" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 L2 4Z" fill="${t.color}"/></marker>`).join('');
+  const paths=[`<defs>${markers}</defs>`], labels=[];
   for (const e of chapterEdges()) {
-    const a=nodeById(e.from), b=nodeById(e.to), g=wire(a,b);
+    const a=nodeById(e.from), b=nodeById(e.to), g=wire(a,b,e);
     const color=a.type==='choice' ? NODE_TYPES[b.type].color : NODE_TYPES[a.type].color;
-    paths.push(`<path d="${g.d}" stroke="${color}" stroke-width="1.6" fill="none" opacity=".76"/>`);
-    if (e.label) labels.push(`<button class="edge-label" style="left:${g.labelX}px;top:${g.labelY}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="Изменить переход">${escapeHtml(e.label)}</button>`);
+    paths.push(`<path class="wire-line" d="${g.d}" stroke="${color}" stroke-width="1.7" fill="none" opacity=".82" marker-end="url(#tip-${a.type==='choice'?b.type:a.type})"/><path class="wire-hit" d="${g.d}" data-action="edit-edge" data-id="${idAttr(e.id)}"><title>Изменить подпись и условия перехода</title></path>`);
+    if (e.label||e.rules?.length) labels.push(`<button class="edge-label" style="left:${g.labelX}px;top:${g.labelY}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="Изменить подпись и условия перехода">${e.rules?.length?icon('sliders',11):''}${escapeHtml(e.label||'Условие')}</button>`);
   }
   layer.innerHTML=paths.join(''); labelLayer.innerHTML=labels.join('');
 }
@@ -168,7 +181,7 @@ function drawMinimap() {
   if (box.w/box.h > ratio) { const h=box.w/ratio; box.y-=(h-box.h)/2; box.h=h; }
   else { const w=box.h*ratio; box.x-=(w-box.w)/2; box.w=w; }
   svg.setAttribute('viewBox',[box.x,box.y,box.w,box.h].join(' ')); miniView=box;
-  const wires=chapterEdges().map(e=>`<path d="${wire(nodeById(e.from),nodeById(e.to)).d}" stroke="#666170" stroke-width="6" fill="none"/>`);
+  const wires=chapterEdges().map(e=>`<path d="${wire(nodeById(e.from),nodeById(e.to),e).d}" stroke="#666170" stroke-width="6" fill="none"/>`);
   const shapes=chapterNodes().map(n=>`<rect x="${pointFor(n).x}" y="${pointFor(n).y}" width="${shape(n).w}" height="${shape(n).h}" rx="10" fill="${NODE_TYPES[n.type].color}" opacity="${n.id===ui.selected ? '.87' : '.47'}"/>`);
   const x=Math.max(box.x+4,-camera.x/camera.scale), y=Math.max(box.y+4,-camera.y/camera.scale);
   const r=Math.min(box.x+box.w-4,(pane.clientWidth-camera.x)/camera.scale), bot=Math.min(box.y+box.h-4,(pane.clientHeight-camera.y)/camera.scale);
@@ -195,14 +208,14 @@ function chooseMapNode(id) {
   if (ui.tool==='link') {
     if (!ui.source) { setMapTool('link',id); return; }
     if (ui.source===id) { toast('Выберите другой узел для перехода'); return; }
-    const source=ui.source; setMapTool('pointer'); openEdgeForm(source,id); return;
+    const source=nodeById(ui.source); setMapTool('pointer'); connectNow(source,nodeById(id)); return;
   }
   selectNode(id);
 }
 function selectNode(id,reveal=false) {
   const n=nodeById(id); if (!n) return;
   const switched=ui.page!=='map'||ui.chapter!==n.chapter;
-  ui.page='map'; ui.chapter=n.chapter; ui.selected=id; ui.inspector=true;
+  ui.page='map'; ui.chapter=n.chapter; ui.selected=id; ui.inspector=innerWidth>=1000;
   if (switched) { renderAll(true); } else {
     mapPane()?.querySelectorAll('.node-card').forEach(el=>{const active=el.dataset.node===id; el.classList.toggle('selected',active); el.setAttribute('aria-pressed',String(active));});
     renderInspector(); drawMinimap();
@@ -210,16 +223,19 @@ function selectNode(id,reveal=false) {
   if (reveal) requestAnimationFrame(()=>revealNode(n));
 }
 function beginMapDrag(e) {
-  if (dragging || e.button>1 || e.target.closest('button,.empty-map') || e.isPrimary===false) return;
+  const handle=e.target.closest('.node-handle');
+  if(handle){beginConnector(e,handle);return;}
+  if (dragging || connectorDrag || e.button>1 || e.target.closest('button,input,[data-action],.empty-map') || e.isPrimary===false) return;
   const card=e.target.closest('[data-node]'), hand=ui.tool==='hand'||e.button===1||spaceDown;
   if (card && ui.tool==='link' && !hand) { chooseMapNode(card.dataset.node); return; }
   const n=card&&!hand ? nodeById(card.dataset.node) : null;
   const pos=n?pointFor(n):null;
   dragging={id:e.pointerId,sx:e.clientX,sy:e.clientY,cx:camera.x,cy:camera.y,n,nx:pos?.x,ny:pos?.y,oldMobile:n?.mobile,moved:false,snapshot:null};
-  e.currentTarget.setPointerCapture(e.pointerId);
+  (card||e.currentTarget).setPointerCapture(e.pointerId);
   e.preventDefault();
 }
 function moveMapDrag(e) {
+  if(connectorDrag){moveConnector(e);return;}
   const d=dragging; if (!d||d.id!==e.pointerId) return;
   const dx=e.clientX-d.sx,dy=e.clientY-d.sy;
   if (!d.moved && Math.hypot(dx,dy)<4) return;
@@ -231,12 +247,14 @@ function moveMapDrag(e) {
   const card=boxFor(d.n); card.style.left=pos.x+'px'; card.style.top=pos.y+'px'; drawEdges(); drawMinimap();
 }
 function endMapDrag(e) {
+  if(connectorDrag){finishConnector(e);return;}
   const d=dragging; if (!d||d.id!==e.pointerId) return;
   dragging=null; mapPane()?.classList.remove('dragging');
   if (d.n && d.moved) { remember(d.snapshot); persist(); }
   if (d.n && !d.moved) chooseMapNode(d.n.id);
 }
 function cancelMapDrag(e) {
+  if(connectorDrag?.pointer===e.pointerId){cancelConnector();return;}
   const d=dragging; if (!d||d.id!==e.pointerId) return;
   if (d.n && d.moved) { if(narrowMap.matches)d.n.mobile=d.oldMobile;else Object.assign(d.n,{x:d.nx,y:d.ny}); const el=boxFor(d.n); el.style.left=d.nx+'px'; el.style.top=d.ny+'px'; drawEdges(); drawMinimap(); }
   dragging=null; mapPane()?.classList.remove('dragging');

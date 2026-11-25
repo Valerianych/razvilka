@@ -25,7 +25,7 @@ const lineCount = n => countWords(n, ['реплика','реплики','реп�
 function blankProject(title, genre = '') {
   return { id: uid(), title, genre, artwork: false, chapters: [{ id: uid(), title: 'Начало', start: null }], nodes: [], edges: [], lore: [] };
 }
-function seedProject() {
+function firstContactExample() {
   const chapter = 'prologue';
   const base = { chapter, art: '', lore: [], lines: [] };
   return validateProject({
@@ -45,6 +45,47 @@ function seedProject() {
       {id:'tower-lore',kind:'location',title:'Радиовышка',description:'Ретранслятор за лесной просекой. Электричество отключили много лет назад, но по ночам на вершине вспыхивает свет.'}
     ]
   });
+}
+const SIDES = ['right','bottom','left','top'];
+function seedProject() {
+  const p=firstContactExample(), station='station-chapter';
+  p.chapters.push({id:station,title:'За дверью станции',start:'station-door'});
+  const voice=p.nodes.find(n=>n.id==='voice'), tower=p.nodes.find(n=>n.id==='tower');
+  voice.lines.push({id:'callsign-line',speaker:'Голос',text:'Когда дойдёшь до станции, скажи в переговорную трубку «Ласточка». Я открою.'});
+  tower.description='На тропе Мира находит медный ключ на выцветшей ленте. За соснами видна дверь станции.';
+  const node=(id,no,type,title,description,x,y)=>({id,no,type,title,description,x,y,chapter:station,lore:['tower-lore'],lines:[]});
+  p.nodes.push(
+    node('station-door',6,'choice','Дверь станции','За железной дверью слышны шаги. Рядом с замочной скважиной висит переговорная трубка.',0,146),
+    node('open-air',7,'ending','По ту сторону эфира','Мира называет позывной. Дверь открывает женщина с таким же приёмником. Наконец они слышат друг друга без помех.',360,0),
+    node('open-key',8,'ending','Архив смотрителя','Медный ключ подходит. Внутри Мира находит журнал смен и последнюю запись деда.',360,150),
+    node('walk-away',9,'ending','Дорога домой','Мира оставляет станцию за спиной. К утру лесная дорога выводит её к посёлку.',360,300)
+  );
+  p.edges.push(
+    {id:'voice-station',from:'voice',to:'station-door',label:'Дойти до станции'},
+    {id:'trail-station',from:'tower',to:'station-door',label:'Подойти к двери'},
+    {id:'say-callsign',from:'station-door',to:'open-air',label:'Назвать позывной',rules:[{kind:'edge',ref:'e-voice',seen:true}]},
+    {id:'use-key',from:'station-door',to:'open-key',label:'Повернуть ключ',rules:[{kind:'edge',ref:'e-tower',seen:true}]},
+    {id:'leave-station',from:'station-door',to:'walk-away',label:'Уйти домой'}
+  );
+  return validateProject(p);
+}
+function makeNode(p,chapter,type,title,position) {
+  return {id:uid(),no:p.nodes.reduce((max,n)=>Math.max(max,n.no),0)+1,chapter,type,title,description:'',...position,important:false,art:'',lore:[],lines:[]};
+}
+function makeEdge(from,to,label='') { return {id:uid(),from,to,label,rules:[],ruleMode:'all'}; }
+function readingMemory(p,path) {
+  return {visited:new Set(path.map(s=>s.node)),chosen:new Set(path.map(s=>s.via).filter(Boolean)),
+    nodes:new Set(p.nodes.map(n=>n.id)),edges:new Set(p.edges.map(e=>e.id))};
+}
+function ruleMet(rule,memory) {
+  const isNode=rule.kind==='node';
+  if (!(isNode?memory.nodes:memory.edges).has(rule.ref)) return false;
+  return (isNode?memory.visited:memory.chosen).has(rule.ref)===rule.seen;
+}
+function transitionOpen(edge,memory) {
+  const rules=edge.rules||[];
+  if (!rules.length) return true;
+  return edge.ruleMode==='any' ? rules.some(r=>ruleMet(r,memory)) : rules.every(r=>ruleMet(r,memory));
 }
 function validateProject(input) {
   if (!input || typeof input.title !== 'string' || !Array.isArray(input.chapters) || !input.chapters.length
@@ -74,7 +115,19 @@ function validateProject(input) {
   const nodeIds = new Set(safe.nodes.map(n => n.id));
   safe.edges = input.edges.map(e => {
     if (!nodeIds.has(e.from) || !nodeIds.has(e.to)) throw new Error('В файле есть связь с отсутствующим узлом.');
-    return { id:e.id, from:e.from, to:e.to, label:string(e.label) };
+    const rules=Array.isArray(e.rules)?e.rules.map(r=>({
+      kind:r?.kind==='node'?'node':'edge',ref:string(r?.ref),seen:r?.seen!==false
+    })):[];
+    const edge={id:e.id,from:e.from,to:e.to,label:string(e.label),rules,ruleMode:e.ruleMode==='any'?'any':'all'};
+    if(e.ports) {
+      const ports={};
+      for(const layout of ['wide','narrow']){
+        const pair=e.ports[layout];
+        if(Array.isArray(pair)&&pair.length===2&&pair.every(side=>SIDES.includes(side)))ports[layout]=pair;
+      }
+      if(Object.keys(ports).length)edge.ports=ports;
+    }
+    return edge;
   });
   safe.chapters.forEach(c => { if (!safe.nodes.some(n => n.id === c.start && n.chapter === c.id)) c.start = safe.nodes.find(n => n.chapter === c.id)?.id || null; });
   return safe;
@@ -85,6 +138,8 @@ function readStudio() {
     if (raw) {
       const data = JSON.parse(raw);
       const projects = data.projects.map(validateProject);
+      const oldDemo=projects.find(p=>p.id==='quiet-air' && p.chapters.length===1);
+      if(oldDemo && JSON.stringify(oldDemo)===JSON.stringify(firstContactExample())) projects[projects.indexOf(oldDemo)]=seedProject();
       if (projects.length) return { version:1, projects, active:projects.some(p => p.id === data.active) ? data.active : projects[0].id };
     }
   } catch { /* A locally disabled storage area still permits in-memory editing and export. */ }
