@@ -34,31 +34,44 @@ function confirmChange(title, text, callback, label='Удалить') {
   modal(title,`<div class="modal-body"><p class="question-text">${esc(text)}</p></div><div class="form-footer"><button class="btn subtle" data-action="close">Отмена</button><button class="btn danger" data-action="confirm">${esc(label)}</button></div>`);
 }
 function renderAll(fit=false) {
+  rememberTimelineView();
   cancelConnector(); dismissMenu();
   const p=project();
+  if(overview.projectId!==p.id)resetOverview();
+  const allChapters=ui.page==='timeline', diagram=allChapters||ui.page==='map';
+  const story=allChapters||overview.path?storyIndex(p):null;
+  if(overview.path)overview.path=validStoryPath(p,story,overview.path);
+  overview.memory=overview.path?readingMemory(p,overview.path):null;
+  if(diagram)lastDiagram=ui.page;
   if (!chapterById(ui.chapter)) ui.chapter=p.chapters[0].id;
   if (!nodeById(ui.selected) || nodeById(ui.selected).chapter!==ui.chapter) ui.selected=chapterById(ui.chapter).start || chapterNodes()[0]?.id || null;
-  document.title=views[ui.page][0]+' · '+p.title+' — Развилка';
-  byId('main-nav').innerHTML=Object.entries(views).map(([key,[title,glyph]])=>`<button data-action="page" data-page="${key}" class="nav-item ${key===ui.page?'active':''}" ${key===ui.page?'aria-current="page"':''}>${icon(glyph,17)}<span>${title}</span></button>`).join('');
+  const navPage=diagram?'map':ui.page;
+  document.title=(allChapters?'Все главы':views[navPage][0])+' · '+p.title+' — Развилка';
+  byId('main-nav').innerHTML=Object.entries(views).map(([key,[title,glyph]])=>`<button data-action="page" data-page="${key}" class="nav-item ${key===navPage?'active':''}" ${key===navPage?'aria-current="page"':''}>${icon(glyph,17)}<span>${title}</span></button>`).join('');
   byId('project-title').textContent=p.title;
   byId('project-cover').classList.toggle('plain',!p.artwork);
   byId('project-meta').innerHTML=`<span>${icon('book',15)}Визуальная новелла</span>${p.genre?'<i></i><span>'+esc(p.genre)+'</span>':''}`;
   byId('file-menu').innerHTML=icon('folder',16)+'<span>Файл</span>'+icon('chevron-down',13);
-  byId('workspace').className='workspace '+(ui.page==='map'?'map-workspace':'collection-workspace');
-  const chapter=chapterById(ui.chapter), mainAction={map:['add-node','Добавить узел'],lore:['add-lore','Добавить запись'],dialogues:['add-line','Добавить реплику']}[ui.page];
+  byId('workspace').className='workspace '+(allChapters?'timeline-workspace':diagram?'map-workspace':'collection-workspace');
+  const chapter=chapterById(ui.chapter), mainAction={map:['add-node','Добавить узел'],lore:['add-lore','Добавить запись'],dialogues:['add-line','Добавить реплику']}[navPage];
   const chapterNum=p.chapters.findIndex(c=>c.id===chapter.id)+1;
-  byId('workbar').innerHTML=`<div class="view-context"><h2>${views[ui.page][0]}</h2>${ui.page==='map' ? '<span class="view-divider"></span><button data-action="chapters" class="chapter-switch" aria-haspopup="true">'+icon('layers',15)+'<span>Глава '+chapterNum+'<span class="chapter-name"> · '+esc(chapter.title)+'</span></span>'+icon('chevron-down',13)+'</button>' : ''}</div>
-    <div class="work-actions"><div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)') }${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button></div>`;
-  if (ui.page==='map') { renderMap(); if (fit) fitGraph(true); }
+  const scope=diagram?`<div class="map-scope" role="group" aria-label="Вид карты"><button data-action="all-chapters" class="${allChapters?'current':''}" aria-pressed="${allChapters}">${icon('timeline',15)}Все главы</button><button data-action="chapters" class="chapter-switch ${allChapters?'':'current'}" aria-haspopup="true">${icon('layers',15)}<span>${allChapters?'По главам':'Глава '+chapterNum+'<span class="chapter-name"> · '+esc(chapter.title)+'</span>'}</span>${icon('chevron-down',12)}</button></div>`:'';
+  const focusLabel=overview.path?'Снять выделение':'Выделить ветку';
+  const actions=allChapters?`<button class="timeline-lore-toggle" data-action="timeline-lore" aria-pressed="${overview.showLore}" aria-label="Показывать лор глав" title="Показывать лор глав">${icon('book',16)}<span>Лор</span></button><button data-action="trace-toggle" class="btn route-toggle ${overview.path?'enabled':''}" aria-pressed="${!!overview.path}" ${p.nodes.length?'':'disabled'}>${icon('eye',17)}${focusLabel}</button>`:`<div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)')}${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button>`;
+  byId('workbar').classList.toggle('diagram-bar',diagram);
+  byId('workbar').innerHTML=`<div class="view-context"><h2>${views[navPage][0]}</h2>${scope}</div><div class="work-actions">${actions}</div>`;
+  if (allChapters) { mapResize?.disconnect(); renderTimeline(story); }
+  else if (ui.page==='map') { renderMap(); if (fit) fitGraph(true); }
   else { mapResize?.disconnect(); renderCollection(); }
   renderStatus(); refreshHistoryButtons();
 }
 function renderStatus() {
-  const here=new Set(chapterNodes().map(n=>n.id));
-  const count=ui.page==='map' ? nodeCount(here.size)+'<span class="status-dot">·</span>'+edgeCount(project().edges.filter(e=>here.has(e.from)).length)
+  const all=ui.page==='timeline', diagram=all||ui.page==='map';
+  const here=new Set((all?project().nodes:chapterNodes()).map(n=>n.id));
+  const count=diagram ? nodeCount(here.size)+'<span class="status-dot">·</span>'+edgeCount(all?project().edges.length:project().edges.filter(e=>here.has(e.from)).length)
     : ui.page==='lore' ? countWords(project().lore.length,['запись','записи','записей']) : lineCount(project().nodes.reduce((n,v)=>n+v.lines.length,0));
-  const legend=ui.page==='map' ? Object.entries(NODE_TYPES).map(([key,t])=>`<span class="legend-item"><i class="legend-swatch swatch-${key}" style="--node-color:${t.color}"></i>${t.name}</span>`).join('') : '';
-  byId('statusbar').innerHTML=`<div class="status-count">${icon(ui.page==='map'?'map':views[ui.page][1],14)}${count}</div><div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
+  const legend=diagram ? Object.entries(NODE_TYPES).map(([key,t])=>`<span class="legend-item"><i class="legend-swatch swatch-${key}" style="--node-color:${t.color}"></i>${t.name}</span>`).join('') : '';
+  byId('statusbar').innerHTML=`<div class="status-count">${icon(diagram?'map':views[ui.page][1],14)}${count}</div><div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
 }
 function loreChip(item) { return `<span class="lore-chip kind-${item.kind}">${icon(LORE_KINDS[item.kind].icon,12)}${esc(item.title)}</span>`; }
 function renderInspector() {
@@ -84,6 +97,7 @@ function renderInspector() {
       ${arrivals.length?'<div class="incoming-chapters"><span>Сюда ведут</span>'+arrivals.map(e=>{const origin=nodeById(e.from);return `<button class="text-action" data-action="jump" data-id="${idAttr(origin.id)}">${icon('arrow-left',13)}${esc(chapterName(origin.chapter)+' · '+origin.title)}</button>`;}).join('')+'</div>':''}</section>
     <section class="inspector-section"><div class="section-line"><h3>${icon('bubbles',15)}Реплики <small>${n.lines.length}</small></h3>${iconButton('node-line','plus','Добавить реплику к узлу')}</div>
     ${n.lines.map(line=>`<button class="inspector-line" data-action="edit-line" data-node-id="${idAttr(n.id)}" data-id="${idAttr(line.id)}"><b>${esc(line.speaker||'Рассказчик')}</b><span>${esc(line.text)}</span></button>`).join('')||'<button class="text-action" data-action="node-line">Добавить реплику</button>'}</section>
+    <button class="secondary-link" data-action="trace-to" data-id="${idAttr(n.id)}">${icon('eye',16)}Показать путь к узлу</button>
     <button class="secondary-link" data-action="node-options">${icon('more',16)}Действия с узлом</button></div>`;
 }
 function renderCollection() {
@@ -111,9 +125,10 @@ function drawCollectionContent() {
   }
 }
 function emptyCollection(title,subtitle,glyph) { return `<div class="empty-collection"><div class="empty-symbol">${icon(glyph,27)}</div><h3>${title}</h3><p>${subtitle}</p></div>`; }
-function goPage(page) { ui.page=page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(page==='map'); }
+function goPage(page) { ui.page=page==='map'?lastDiagram:page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(ui.page==='map'); }
 function activateProject(id) {
-  studio.active=id; past=[]; future=[]; ui.page='map'; ui.chapter=project().chapters[0].id; ui.selected=project().chapters[0].start;
+  studio.active=id; past=[]; future=[]; ui.page=project().chapters.length>1?'timeline':'map'; ui.chapter=project().chapters[0].id; ui.selected=project().chapters[0].start;
+  resetOverview();
   ui.inspector=innerWidth>=1000; ui.tool='pointer'; ui.source=null; ui.search='';ui.kind='all'; persist(); closeModal(); renderAll(true);
 }
 function openExampleRoutes() {
@@ -216,12 +231,28 @@ function showShortcuts() {
   modal('Горячие клавиши','<div class="modal-body key-list">'+keys.map(([l,k])=>`<div><span>${l}</span><kbd>${k}</kbd></div>`).join('')+'</div>');
 }
 function setChapter(id) {
-  ui.chapter=id;ui.selected=chapterById(id).start||chapterNodes()[0]?.id||null;ui.source=null;ui.tool='pointer';renderAll(true);
+  ui.page='map';ui.chapter=id;ui.selected=chapterById(id).start||chapterNodes()[0]?.id||null;ui.source=null;ui.tool='pointer';renderAll(true);
 }
 function handleAction(action,button,e) {
   const id=button.dataset.id, n=nodeById(ui.selected);
   switch(action) {
     case 'page': goPage(button.dataset.page); break;
+    case 'all-chapters': goPage('timeline');break;
+    case 'timeline-lore': overview.showLore=!overview.showLore;renderAll();break;
+    case 'loose-lore': openLooseLore();break;
+    case 'timeline-first': setChapter(id);openAddPalette(document.querySelector('.add-button'));break;
+    case 'trace-toggle': startTimelinePath();break;
+    case 'clear-chapter-route': overview.path=null;renderAll();break;
+    case 'trace-to': case 'trace-edge': traceTimeline(id,action==='trace-edge');break;
+    case 'trace-back': {
+      const path=overview.path, fork=previousFork(project(),overview.layout.index,path);
+      showTimelinePath(path.slice(0,fork<0?-1:fork+1));break;
+    }
+    case 'read-route': {const path=playSession?.path.slice();if(path){closeModal();showTimelinePath(path);}break;}
+    case 'timeline-in': zoomTimeline(overview.zoom*1.2);break;
+    case 'timeline-out': zoomTimeline(overview.zoom/1.2);break;
+    case 'timeline-actual': zoomTimeline(1);break;
+    case 'timeline-fit': zoomTimeline(1,true);break;
     case 'file-menu': showMenu(button,menuItem('projects','grid','Мои проекты')+menuItem('project-settings','sliders','Параметры проекта')+'<hr>'+menuItem('export','download','Скачать проект')+menuItem('import','upload','Открыть из файла')+'<hr>'+menuItem('shortcuts','keyboard','Горячие клавиши'));break;
     case 'projects': showProjects();break;
     case 'new-project': openProjectForm(true);break;
@@ -233,7 +264,7 @@ function handleAction(action,button,e) {
     case 'read-next': followEdge(id);break;
     case 'read-back': if(playSession.path.length>1)playSession.path.pop();renderReading();break;
     case 'read-restart': playSession.path=[{node:playSession.start,via:null}];renderReading();break;
-    case 'chapters': showMenu(button,project().chapters.map((c,i)=>menuItem('chapter','layers',`Глава ${i+1} · ${c.title}`,`data-id="${idAttr(c.id)}"`,ui.chapter===c.id?icon('check',14):'')).join('')+'<hr>'+menuItem('add-chapter','plus','Добавить главу')+menuItem('rename-chapter','edit','Переименовать главу'));break;
+    case 'chapters': showMenu(button,project().chapters.map((c,i)=>menuItem('chapter','layers',`Глава ${i+1} · ${c.title}`,`data-id="${idAttr(c.id)}"`,ui.page==='map'&&ui.chapter===c.id?icon('check',14):'')).join('')+'<hr>'+menuItem('add-chapter','plus','Добавить главу')+(ui.page==='map'?menuItem('rename-chapter','edit','Переименовать главу'):''));break;
     case 'chapter': setChapter(id);break;
     case 'add-chapter': openChapterForm(true);break;
     case 'continue-chapter': openChapterForm(true,id);break;
@@ -271,7 +302,7 @@ function handleAction(action,button,e) {
     case 'delete-edge': changeProject(p=>{p.edges=p.edges.filter(v=>v.id!==id);});closeModal();renderAll();toast('Переход удалён');break;
     case 'filter': ui.kind=button.dataset.kind; renderCollection();break;
     case 'add-lore': openLoreForm();break;
-    case 'edit-lore': openLoreForm(id);break;
+    case 'edit-lore': openLoreForm(id);modalContext.chapterForScene=button.closest('[data-band]')?.dataset.band;break;
     case 'attach-lore': openLorePicker();break;
     case 'new-attached-lore': {
       const pending=[...new FormData(byId('attach-form')).getAll('lore')];
@@ -307,6 +338,7 @@ dialog.addEventListener('click',e=>{if(e.target===dialog)closeModal();});
 dialog.addEventListener('close',()=>{playSession=null;});
 byId('import-file').addEventListener('change',e=>importProject(e.target.files[0]));
 document.addEventListener('change',e=>{
+  if(e.target.id==='timeline-chapter')scrollToTimelineChapter(e.target.value);
   if(e.target.matches('.rule-test')) {
     const kind=e.target.value.split('-')[0], ref=e.target.closest('.rule-row').querySelector('.rule-ref');
     const previous=ref.value;
@@ -377,7 +409,7 @@ dialog.addEventListener('submit',e=>{
       const item={id:ctx.id||uid(),kind:value('kind'),title:value('title'),description:value('description')};
       changeProject(p=>{if(ctx.id)Object.assign(p.lore.find(l=>l.id===ctx.id),item);else p.lore.push(item);if(ctx.attachTo){const owner=nodeById(ctx.attachTo);owner.lore=[...new Set([...(ctx.pending||owner.lore),item.id])];}});
       closeModal();renderAll();
-      if(e.submitter?.value==='scene'){openNodeForm(null);modalContext.loreId=item.id;}else toast('Запись сохранена');break;
+      if(e.submitter?.value==='scene'){if(ctx.chapterForScene)ui.chapter=ctx.chapterForScene;openNodeForm(null);modalContext.loreId=item.id;}else toast('Запись сохранена');break;
     }
     case 'attach-form': changeProject(()=>{nodeById(ui.selected).lore=data.getAll('lore');});closeModal();renderAll();break;
     case 'line-form': {
@@ -389,6 +421,7 @@ dialog.addEventListener('submit',e=>{
 });
 document.addEventListener('keydown',e=>{
   const editing=e.target.matches('input,textarea,select,[contenteditable="true"]');
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('.timeline-hit')){e.preventDefault();traceTimeline(e.target.dataset.id,true);return;}
   if(e.key==='Escape'){if(connectorDrag){cancelConnector();return;}if(!menu.hidden){dismissMenu();return;}if(!dialog.open)setMapTool('pointer');return;}
   if(dialog.open||editing)return;
   if((e.ctrlKey||e.metaKey)&&e.code==='KeyZ'){e.preventDefault();travelHistory(e.shiftKey?'redo':'undo');return;}

@@ -1,4 +1,6 @@
 const iconPaths = {
+  eye:'<path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  timeline:'<path d="M3 11h18M7 4v3m10 10v3"/><rect x="3" y="7" width="8" height="8" rx="2"/><rect x="14" y="8" width="7" height="7" rx="2"/>',
   map: '<rect x="3" y="3" width="6" height="5" rx="1.4"/><rect x="15" y="12" width="6" height="5" rx="1.4"/><rect x="3" y="16" width="6" height="5" rx="1.4"/><path d="M6 8v8m0-5c0 2 1 3.5 4 3.5h5"/>',
   book: '<path d="M12 6c-2-2-5-2.5-9-1.8v14c4-.7 7-.2 9 1.8 2-2 5-2.5 9-1.8v-14c-4-.7-7-.2-9 1.8Zm0 0v14"/>',
   bubbles: '<path d="M14 12a2 2 0 0 1-2 2H7l-4 3V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2z"/><path d="M17 8h2a2 2 0 0 1 2 2v11l-4-3h-4a2 2 0 0 1-2-2"/>',

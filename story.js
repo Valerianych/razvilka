@@ -78,6 +78,6 @@ function renderReading() {
     <div class="reader-body"><div class="reader-location">${esc(chapterName(n.chapter))} <span> / </span> #${pad(n.no)}</div><h3>${esc(n.title)}</h3>${n.description?'<p class="reader-description">'+esc(n.description)+'</p>':''}
     ${n.lines.length?'<div class="reader-lines">'+n.lines.map(l=>`<div><b>${esc(l.speaker||'Рассказчик')}</b><p>${esc(l.text)}</p></div>`).join('')+'</div>':''}
     <div class="reader-choices">${choices||'<div class="reader-end">'+icon('ending',16)+end+'</div>'}</div>${explanation}</div>
-    <div class="reader-controls"><button class="quiet-button" data-action="read-back" ${playSession.path.length<2?'disabled':''}>${icon('arrow-left',15)}Назад</button><button class="quiet-button" data-action="read-restart">${icon('reset',14)}Сначала</button><button class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon('map',14)}К узлу</button></div>`;
+    <div class="reader-controls"><button class="quiet-button" data-action="read-back" ${playSession.path.length<2?'disabled':''}>${icon('arrow-left',15)}Назад</button><button class="quiet-button" data-action="read-restart">${icon('reset',14)}Сначала</button><button class="quiet-button" data-action="read-route">${icon('eye',15)}Показать ветку</button><button class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon('map',14)}К узлу</button></div>`;
   modal('Прохождение истории',body,'reader-modal');
 }

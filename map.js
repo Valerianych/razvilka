@@ -88,7 +88,8 @@ function cardMarkup(n) {
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
   const start = chapterById(ui.chapter)?.start === n.id;
-  return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
+  const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):'';
+  return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}${route}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
     ${start ? '<div class="start-label">'+icon('play',10)+'Начало</div>' : ''}
     ${n.art === 'radio' ? '<div class="node-art" role="img" aria-label="Старый приёмник в лесной сторожке"></div>' : ''}
     <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
@@ -113,6 +114,7 @@ function renderMap() {
     <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
     ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся история?</h3><p>Добавьте первую сцену этой главы.</p><button class="btn primary" data-action="add-node">'+icon('plus',16)+'Добавить узел</button></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
+    ${overview.path?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:''}
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
     </section><aside id="inspector" class="inspector" aria-label="Детали узла"></aside>`;
   drawEdges(); renderInspector(); syncMapTools(); applyCamera();
@@ -163,12 +165,14 @@ function wire(n1,n2,edge) {
 function drawEdges() {
   const layer=document.getElementById('edges'), labelLayer=document.getElementById('edge-labels'); if (!layer) return;
   const markers=Object.entries(NODE_TYPES).map(([type,t])=>`<marker id="tip-${type}" viewBox="0 0 8 8" refX="7.6" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 L2 4Z" fill="${t.color}"/></marker>`).join('');
-  const paths=[`<defs>${markers}</defs>`], labels=[];
+  const routeTip='<marker id="tip-route" viewBox="0 0 8 8" refX="7.6" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 L2 4Z" fill="#97e4c5"/></marker>';
+  const paths=[`<defs>${markers}${routeTip}</defs>`], labels=[];
   for (const e of chapterEdges()) {
     const a=nodeById(e.from), b=nodeById(e.to), g=wire(a,b,e);
-    const color=a.type==='choice' ? NODE_TYPES[b.type].color : NODE_TYPES[a.type].color;
-    paths.push(`<path class="wire-line" d="${g.d}" stroke="${color}" stroke-width="1.7" fill="none" opacity=".82" marker-end="url(#tip-${a.type==='choice'?b.type:a.type})"/><path class="wire-hit" d="${g.d}" data-action="edit-edge" data-id="${idAttr(e.id)}"><title>Изменить подпись и условия перехода</title></path>`);
-    if (e.label||e.rules?.length) labels.push(`<button class="edge-label" style="left:${g.labelX}px;top:${g.labelY}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="Изменить подпись и условия перехода">${e.rules?.length?icon('sliders',11):''}${escapeHtml(e.label||'Условие')}</button>`);
+    const onPath=overview.memory?.chosen.has(e.id), faded=overview.memory&&!onPath;
+    const type=a.type==='choice'?b.type:a.type, color=onPath?'#97e4c5':NODE_TYPES[type].color;
+    paths.push(`<path class="wire-line" d="${g.d}" stroke="${color}" stroke-width="${onPath?3:1.7}" fill="none" opacity="${faded?.3:.9}" ${faded?'stroke-dasharray="5 3"':''} marker-end="url(#tip-${onPath?'route':type})"/><path class="wire-hit" d="${g.d}" data-action="edit-edge" data-id="${idAttr(e.id)}"><title>Изменить подпись и условия перехода</title></path>`);
+    if (e.label||e.rules?.length) labels.push(`<button class="edge-label${faded?' chapter-off-path':''}" style="left:${g.labelX}px;top:${g.labelY}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="Изменить подпись и условия перехода">${e.rules?.length?icon('sliders',11):''}${escapeHtml(e.label||'Условие')}</button>`);
   }
   layer.innerHTML=paths.join(''); labelLayer.innerHTML=labels.join('');
 }

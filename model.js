@@ -150,7 +150,7 @@ const project = () => studio.projects.find(p => p.id === studio.active);
 const nodeById = id => project().nodes.find(n => n.id === id);
 const chapterById = id => project().chapters.find(c => c.id === id);
 const ui = {
-  page:'map', chapter:project().chapters[0].id, selected:project().chapters[0].start,
+  page:project().chapters.length>1?'timeline':'map', chapter:project().chapters[0].id, selected:project().chapters[0].start,
   inspector:window.innerWidth >= 1000, tool:'pointer', source:null, search:'', kind:'all'
 };
 const camera = { x:0, y:0, scale:1 };
