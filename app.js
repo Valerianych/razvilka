@@ -49,6 +49,7 @@ function renderAll(fit=false) {
   document.title=(allChapters?'Все главы':views[navPage][0])+' · '+p.title+' — Развилка';
   byId('main-nav').innerHTML=Object.entries(views).map(([key,[title,glyph]])=>`<button data-action="page" data-page="${key}" class="nav-item ${key===navPage?'active':''}" ${key===navPage?'aria-current="page"':''}>${icon(glyph,17)}<span>${title}</span></button>`).join('');
   byId('project-title').textContent=p.title;
+  byId('start-own').hidden=!(p.id==='quiet-air'&&studio.projects.length===1);
   byId('project-cover').classList.toggle('plain',!p.artwork);
   byId('project-meta').innerHTML=`<span>${icon('book',15)}Визуальная новелла</span>${p.genre?'<i></i><span>'+esc(p.genre)+'</span>':''}`;
   byId('file-menu').innerHTML=icon('folder',16)+'<span>Файл</span>'+icon('chevron-down',13);
@@ -89,6 +90,7 @@ function renderInspector() {
   panel.innerHTML=`<div class="inspector-head"><span>${icon('panel',16)}Детали узла</span>${iconButton('hide-inspector','x','Закрыть детали узла')}</div>
     <div class="inspector-scroll"><div class="inspector-id"><button class="type-edit" data-action="node-type" title="Изменить тип узла">${typeTag(n.type)}${icon('chevron-down',12)}</button><span class="inspector-ident"><span class="inspector-no">УЗЕЛ #${pad(n.no)}</span>${iconButton('toggle-important','spark',n.important?'Снять отметку «Ключевой момент»':'Отметить ключевой момент',`aria-pressed="${!!n.important}"`)}</span></div>
     <label class="field"><span>Название</span><input data-edit="title" data-id="${idAttr(n.id)}" value="${esc(n.title)}" maxlength="240" placeholder="Название узла"></label>
+    ${n.type!=='ending'?`<button class="writer-from-scene" data-action="${n.type==='choice'?'edit-choice':'new-choice'}" data-id="${idAttr(n.id)}">${icon('branch',15)}${n.type==='choice'?'Редактировать варианты':'Добавить выбор после сцены'}</button>`:''}
     <label class="field"><span>Описание</span><textarea data-edit="description" data-id="${idAttr(n.id)}" rows="4" placeholder="Что происходит в этой точке истории?">${esc(n.description)}</textarea></label>
     <section class="inspector-section"><div class="section-line"><h3>${icon('book',15)}Связанный лор</h3>${iconButton('attach-lore','plus','Привязать запись лора')}</div>
     <div class="chips">${related.length?related.map(l=>`<button class="plain-chip" data-action="edit-lore" data-id="${idAttr(l.id)}">${loreChip(l)}</button>`).join(''):'<button class="text-action" data-action="attach-lore">Привязать запись</button>'}</div></section>
@@ -125,11 +127,38 @@ function drawCollectionContent() {
   }
 }
 function emptyCollection(title,subtitle,glyph) { return `<div class="empty-collection"><div class="empty-symbol">${icon(glyph,27)}</div><h3>${title}</h3><p>${subtitle}</p></div>`; }
-function goPage(page) { ui.page=page==='map'?lastDiagram:page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(ui.page==='map'); }
+function goPage(page) { ui.page=page==='map'?lastDiagram:page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(); }
+function placeKey(){return 'razvilka.place.'+project().id+(narrowMap.matches?'.narrow':'.wide');}
+function rememberPlace() {
+  const pane=mapPane(), w=pane?.clientWidth||lastPaneSize?.w, h=pane?.clientHeight||lastPaneSize?.h;
+  const map=w&&h?{x:(w/2-camera.x)/camera.scale,y:(h/2-camera.y)/camera.scale,scale:camera.scale}:null;
+  const place={diagram:lastDiagram,chapter:ui.chapter,selected:ui.selected,map,inspector:ui.inspector,
+    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path};
+  try {sessionStorage.setItem(placeKey(),JSON.stringify(place));} catch { /* The editor also works without tab storage. */ }
+}
+function resumePlace() {
+  let place;
+  try {place=JSON.parse(sessionStorage.getItem(placeKey()));} catch { /* An unavailable view starts at the chapter entrance. */ }
+  if(!place||!chapterById(place.chapter)){renderAll(true);return;}
+  ui.chapter=place.chapter;
+  ui.selected=nodeById(place.selected)?.chapter===ui.chapter?place.selected:chapterById(ui.chapter).start;
+  ui.page=place.diagram==='timeline'?'timeline':'map';
+  if(typeof place.inspector==='boolean')ui.inspector=place.inspector;
+  if(overview.projectId!==project().id)resetOverview();
+  if(Number.isFinite(place.zoom)&&place.zoom>0)overview.zoom=place.zoom;
+  if(Number.isFinite(place.left))overview.left=place.left;
+  if(Number.isFinite(place.top))overview.top=place.top;
+  if(typeof place.lore==='boolean')overview.showLore=place.lore;
+  if(Array.isArray(place.path)&&place.path.every(s=>typeof s?.node==='string'&&(s.via===null||typeof s.via==='string')))overview.path=place.path;
+  const m=place.map, restore=ui.page==='map'&&m&&Number.isFinite(m.x)&&Number.isFinite(m.y)&&m.scale>=.17&&m.scale<=2.3;
+  renderAll(!restore);
+  if(restore){const pane=mapPane();camera.scale=m.scale;camera.x=pane.clientWidth/2-m.x*m.scale;camera.y=pane.clientHeight/2-m.y*m.scale;applyCamera();}
+}
 function activateProject(id) {
+  rememberPlace();
   studio.active=id; past=[]; future=[]; ui.page=project().chapters.length>1?'timeline':'map'; ui.chapter=project().chapters[0].id; ui.selected=project().chapters[0].start;
   resetOverview();
-  ui.inspector=innerWidth>=1000; ui.tool='pointer'; ui.source=null; ui.search='';ui.kind='all'; persist(); closeModal(); renderAll(true);
+  ui.inspector=innerWidth>=1000; ui.tool='pointer'; ui.source=null; ui.search='';ui.kind='all'; persist(); closeModal(); resumePlace();
 }
 function openExampleRoutes() {
   const fresh=seedProject(),template=JSON.stringify(fresh);
@@ -227,7 +256,7 @@ function deleteNode(id) {
   });
 }
 function showShortcuts() {
-  const keys=[['Добавить узел','N'],['Выделение','V'],['Перемещение карты','H'],['Временно перемещать карту','Пробел'],['Связать узлы','C'],['Показать всю карту','F'],['Удалить выбранный узел','Delete'],['Отменить действие','Ctrl / ⌘ + Z'],['Повторить действие','Ctrl / ⌘ + Shift + Z'],['Закрыть окно или выйти из связи','Esc']];
+  const keys=[['Найти в проекте','Ctrl / ⌘ + K'],['Добавить узел','N'],['Выделение','V'],['Перемещение карты','H'],['Временно перемещать карту','Пробел'],['Связать узлы','C'],['Показать всю карту','F'],['Удалить выбранный узел','Delete'],['Отменить действие','Ctrl / ⌘ + Z'],['Повторить действие','Ctrl / ⌘ + Shift + Z'],['Закрыть окно или выйти из связи','Esc']];
   modal('Горячие клавиши','<div class="modal-body key-list">'+keys.map(([l,k])=>`<div><span>${l}</span><kbd>${k}</kbd></div>`).join('')+'</div>');
 }
 function setChapter(id) {
@@ -240,7 +269,25 @@ function handleAction(action,button,e) {
     case 'all-chapters': goPage('timeline');break;
     case 'timeline-lore': overview.showLore=!overview.showLore;renderAll();break;
     case 'loose-lore': openLooseLore();break;
-    case 'timeline-first': setChapter(id);openAddPalette(document.querySelector('.add-button'));break;
+    case 'timeline-first': case 'first-scene':
+      if(action==='timeline-first')setChapter(id);
+      pendingInsert={chapter:ui.chapter,side:'right'};addFromPalette('scene');break;
+    case 'next-scene': pendingInsert={chapter:ui.chapter,source:id,side:narrowMap.matches?'bottom':'right'};addFromPalette('scene');break;
+    case 'find-project': openProjectSearch();break;
+    case 'new-choice': openChoiceWriter({source:id});break;
+    case 'edit-choice': openChoiceWriter({id});break;
+    case 'add-option': addChoiceRow();break;
+    case 'remove-option': case 'restore-option': toggleChoiceRow(button.closest('.choice-row'),action==='remove-option');break;
+    case 'more-matches': {
+      const host=button.closest('.writer-search');
+      const prev=Number(host.dataset.limit)||30;
+      host.dataset.limit=prev+30;drawWriterResults(host);
+      host.querySelectorAll('.writer-result')[prev]?.focus();break;
+    }
+    case 'choose-destination': {
+      const row=button.closest('.choice-row'), details=row.querySelector('details');
+      row.dataset.destination=id;refreshChoiceTarget(row);details.open=false;details.querySelector('summary').focus();break;
+    }
     case 'trace-toggle': startTimelinePath();break;
     case 'clear-chapter-route': overview.path=null;renderAll();break;
     case 'trace-to': case 'trace-edge': traceTimeline(id,action==='trace-edge');break;
@@ -253,7 +300,7 @@ function handleAction(action,button,e) {
     case 'timeline-out': zoomTimeline(overview.zoom/1.2);break;
     case 'timeline-actual': zoomTimeline(1);break;
     case 'timeline-fit': zoomTimeline(1,true);break;
-    case 'file-menu': showMenu(button,menuItem('projects','grid','Мои проекты')+menuItem('project-settings','sliders','Параметры проекта')+'<hr>'+menuItem('export','download','Скачать проект')+menuItem('import','upload','Открыть из файла')+'<hr>'+menuItem('shortcuts','keyboard','Горячие клавиши'));break;
+    case 'file-menu': showMenu(button,menuItem('projects','grid','Мои проекты')+menuItem('project-settings','sliders','Параметры проекта')+'<hr>'+menuItem('undo','undo','Отменить действие',past.length?'':'disabled')+menuItem('redo','redo','Повторить действие',future.length?'':'disabled')+'<hr>'+menuItem('export','download','Скачать проект')+menuItem('import','upload','Открыть из файла')+'<hr>'+menuItem('shortcuts','keyboard','Горячие клавиши'));break;
     case 'projects': showProjects();break;
     case 'new-project': openProjectForm(true);break;
     case 'project-settings': openProjectForm(false);break;
@@ -335,9 +382,13 @@ document.addEventListener('pointerdown',e=>{
   if(!menu.hidden&&!menu.contains(e.target)&&!e.target.closest('[aria-haspopup],.type-edit,[data-action="node-options"]'))dismissMenu();
 });
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeModal();});
-dialog.addEventListener('close',()=>{playSession=null;});
+dialog.addEventListener('close',()=>{playSession=null;if(refreshAfterWriting&&!dialog.open){refreshAfterWriting=false;renderAll();}});
 byId('import-file').addEventListener('change',e=>importProject(e.target.files[0]));
 document.addEventListener('change',e=>{
+  if(e.target.matches('.outcome-mode')){
+    const row=e.target.closest('.choice-row');refreshChoiceTarget(row);
+    if(e.target.value==='existing')row.querySelector('.writer-search input')?.focus();
+  }
   if(e.target.id==='timeline-chapter')scrollToTimelineChapter(e.target.value);
   if(e.target.matches('.rule-test')) {
     const kind=e.target.value.split('-')[0], ref=e.target.closest('.rule-row').querySelector('.rule-ref');
@@ -354,6 +405,8 @@ document.addEventListener('focusout',e=>{
 });
 document.addEventListener('input',e=>{
   const el=e.target;
+  if(el.matches('.writer-search input')){const host=el.closest('.writer-search');delete host.dataset.limit;drawWriterResults(host);return;}
+  if(el.matches('.outcome-title input')){refreshChoiceTarget(el.closest('.choice-row'));return;}
   if(el.id==='search'){ui.search=el.value;drawCollectionContent();return;}
   if(!el.dataset.edit)return;
   const n=nodeById(el.dataset.id);if(!n)return;
@@ -369,6 +422,7 @@ dialog.addEventListener('submit',e=>{
     if (!field.value.trim()) { field.setCustomValidity('Заполните это поле');field.reportValidity(); field.addEventListener('input',()=>field.setCustomValidity(''),{once:true});return; }
   }
   switch(form.id) {
+    case 'choice-form': saveWrittenChoice(form,ctx);break;
     case 'project-form': {
       if(ctx.isNew){const p=blankProject(value('title'),value('genre'));studio.projects.push(p);activateProject(p.id);toast('Новый проект создан');}
       else{changeProject(p=>{p.title=value('title');p.genre=value('genre');});closeModal();renderAll();}break;
@@ -421,6 +475,21 @@ dialog.addEventListener('submit',e=>{
 });
 document.addEventListener('keydown',e=>{
   const editing=e.target.matches('input,textarea,select,[contenteditable="true"]');
+  if((e.ctrlKey||e.metaKey)&&e.code==='KeyK'&&!dialog.open){e.preventDefault();openProjectSearch();return;}
+  const search=e.target.closest('.writer-search');
+  if(search&&!e.isComposing&&['ArrowDown','ArrowUp','Enter'].includes(e.key)){
+    const items=[...search.querySelectorAll('.writer-result')], ix=items.indexOf(e.target);
+    if(e.key==='Enter'&&e.target.matches('input')){e.preventDefault();items[0]?.click();return;}
+    if(e.key!=='Enter'){e.preventDefault();if(e.key==='ArrowUp'&&ix<=0)search.querySelector('input').focus();else items[Math.max(0,Math.min(items.length-1,ix+(e.key==='ArrowDown'?1:-1)))]?.focus();return;}
+  }
+  if(e.key==='Enter'&&!e.isComposing&&e.target.closest('#choice-form')){
+    const form=byId('choice-form');
+    if(e.ctrlKey||e.metaKey){e.preventDefault();form.requestSubmit();return;}
+    if(e.target.matches('[name="question"],.choice-label')){
+      const labels=[...form.querySelectorAll('.choice-row:not(.is-removed) .choice-label')], next=labels[labels.indexOf(e.target)+1];
+      if(next){e.preventDefault();next.focus();return;}
+    }
+  }
   if((e.key==='Enter'||e.key===' ')&&e.target.matches('.timeline-hit')){e.preventDefault();traceTimeline(e.target.dataset.id,true);return;}
   if(e.key==='Escape'){if(connectorDrag){cancelConnector();return;}if(!menu.hidden){dismissMenu();return;}if(!dialog.open)setMapTool('pointer');return;}
   if(dialog.open||editing)return;
@@ -447,11 +516,19 @@ window.addEventListener('keyup',e=>{if(e.code==='Space')releaseSpace();});
 window.addEventListener('blur',releaseSpace);
 window.addEventListener('storage',e=>{
   if(e.key!==STORAGE_KEY||!e.newValue)return;
-  if(dialog.open||document.activeElement?.matches('[data-edit]')) {toast('Проект изменён в другой вкладке');return;}
+  const writing=dialog.open&&!!byId('choice-form');
+  if((dialog.open&&!writing)||document.activeElement?.matches('[data-edit]')) {toast('Проект изменён в другой вкладке');return;}
   const previous=studio.active;studio=readStudio();
   if(studio.projects.some(p=>p.id===previous))studio.active=previous;
-  past=[];future=[];renderAll();
+  past=[];future=[];
+  if(writing){
+    refreshAfterWriting=true;modalContext.entries=writingIndex(project());
+    dialog.querySelectorAll('.writer-search').forEach(drawWriterResults);
+    return;
+  }
+  renderAll();
 });
 document.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon,el.dataset.icon==='chevron-right'?12:15);});
 narrowMap.addEventListener('change',()=>{ui.inspector=!narrowMap.matches&&innerWidth>=1000;if(ui.page==='map')renderAll(true);});
-persist();renderAll(true);
+window.addEventListener('pagehide',rememberPlace);
+persist();resumePlace();

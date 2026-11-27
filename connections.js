@@ -63,28 +63,42 @@ function openAddPalette(button) {
 function insertPosition(n,source,side,drop,compact) {
   const size=compact?shape:desktopShape, position=compact?pointFor:node=>node;
   const box=size(n), origin=source?position(source):{x:0,y:0}, parent=source?size(source):{w:0,h:0};
-  const [dx,dy]=directions[side], gap=compact?55:92;
+  const stacked=compact&&!side&&source, [dx,dy]=directions[side||'right'], gap=compact?55:92;
   const base=drop?{x:drop.x-box.w/2,y:drop.y-box.h/2}:{
-    x:origin.x+(parent.w-box.w)/2+dx*((parent.w+box.w)/2+gap),
-    y:origin.y+(parent.h-box.h)/2+dy*((parent.h+box.h)/2+gap)
+    x:stacked?origin.x+(source.type==='choice'?30:0):origin.x+(parent.w-box.w)/2+dx*((parent.w+box.w)/2+gap),
+    y:stacked?origin.y+parent.h+gap:origin.y+(parent.h-box.h)/2+dy*((parent.h+box.h)/2+gap)
   };
-  const occupied=chapterNodes().map(item=>({...position(item),...size(item)}));
+  const occupied=project().nodes.filter(item=>item.chapter===n.chapter).map(item=>({...position(item),...size(item)}));
   for(let i=0;;i++){
-    const step=Math.ceil(i/2)*(i%2?1:-1);
+    const step=stacked?i:Math.ceil(i/2)*(i%2?1:-1);
     const x=Math.round(base.x+(dy?step*(box.w+34):0)),y=Math.round(base.y+(dx?step*(box.h+36):0));
     if(!occupied.some(b=>x<b.x+b.w+12&&x+box.w+12>b.x&&y<b.y+b.h+12&&y+box.h+12>b.y))return {x,y};
   }
 }
+function appendPlacedNode(p,chapter,type,title,source,side,spot) {
+  const n=makeNode(p,chapter,type,title,{x:0,y:0});
+  Object.assign(n,insertPosition(n,source,side||'right',narrowMap.matches?null:spot,false));
+  if(narrowMap.matches){
+    n.mobile=insertPosition(n,source,side,spot,true);
+    for(const current of p.nodes){
+      if(current.chapter!==chapter||current.mobile)continue;
+      const {x,y}=pointFor(current);
+      current.mobile={x,y};
+    }
+  }
+  p.nodes.push(n);
+  const c=chapterById(chapter);
+  if(!c.start)c.start=n.id;
+  return n;
+}
 function addFromPalette(type) {
   const pending=pendingInsert; pendingInsert=null;
   if(!pending||pending.chapter!==ui.chapter||!Object.hasOwn(NODE_TYPES,type))return;
-  const p=project(), source=nodeById(pending.source), side=pending.side||'right',compact=narrowMap.matches;
-  const n=makeNode(p,ui.chapter,type,freshTitles[type],{x:0,y:0});
-  Object.assign(n,insertPosition(n,source,side,compact?null:pending.spot,false));
-  if(compact)n.mobile=insertPosition(n,source,side,pending.spot,true);
-  changeProject(()=>{
-    if(compact)for(const current of chapterNodes()){if(!current.mobile){const pos=pointFor(current);current.mobile={x:pos.x,y:pos.y};}}
-    p.nodes.push(n);const c=chapterById(ui.chapter);if(!c.start)c.start=n.id;
+  if(type==='choice'){openChoiceWriter({source:pending.source,chapter:pending.chapter,side:pending.side,spot:pending.spot});return;}
+  const source=nodeById(pending.source), side=pending.side||'right';
+  let n;
+  changeProject(p=>{
+    n=appendPlacedNode(p,ui.chapter,type,freshTitles[type],source,side,pending.spot);
     if(source){const edge=makeEdge(source.id,n.id);setEndpoints(edge,side,opposite[side]);p.edges.push(edge);}
   });
   ui.selected=n.id;ui.source=null;ui.tool='pointer';

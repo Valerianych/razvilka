@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <meta name="theme-color" content="#17171d">
   <meta name="description" content="Развилка — рабочее пространство для карты сюжета, лора и диалогов визуальной новеллы.">
   <title>Развилка — карта сюжета</title>
@@ -467,6 +467,77 @@ kbd {font:11px var(--mono);color:#dfd8ed;background:#33313b;border:1px solid #49
 .timeline-lore-list button {display:flex;gap:9px;align-items:center;padding:8px;border-bottom:1px solid #3a3741;text-align:left}
 .timeline-lore-list button>span:nth-child(2) {flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#beb7c5;font-size:12px}
 .reader-controls {flex-wrap:wrap}
+.project-search,.project-search span:first-child,.first-actions,.scene-next-actions,.card-variants,.writer-from-scene,.timeline-variants {display:inline-flex;align-items:center}
+.project-search {gap:6px;padding:7px 9px;border:1px solid #45414e;border-radius:6px;color:#ded5e9;font-size:12px}
+.project-search:hover,.writer-from-scene:hover {background:#37313f;color:#fff}
+.project-links,.start-own {display:flex;align-items:center;gap:8px}
+.start-own {gap:4px;padding:2px 8px;border-left:1px solid #736a80;color:#e6d9f8;font-size:12px}
+.start-own:hover {color:white;text-decoration:underline}
+@media(max-width:620px){.start-own{font-size:10.5px;padding:1px 6px}.start-own .icon{width:12px;height:12px}}
+.first-actions {justify-content:center;flex-wrap:wrap;gap:8px}
+.card-variants,.timeline-variants,.scene-next-actions button {gap:5px;padding:3px 6px;border:1px solid #64533f;border-radius:5px;background:#352e27;color:#e1c49c;font-size:11px}
+.card-variants:hover,.timeline-variants:hover,.scene-next-actions button:hover {background:#4a3b2b;color:#ffe6bf}
+.scene-next-actions {display:none;gap:5px;margin-top:3px}
+.scene-next-actions button {display:flex;align-items:center}
+.scene-next-actions button:first-child {color:#d9c9ef;border-color:#53495e;background:#302c37}
+.node-card.selected .scene-next-actions,.node-card:focus-within .scene-next-actions {display:flex}
+.node-card:is(.selected,:focus-within) .node-content:has(.scene-next-actions) :is(.node-detail,.node-summary) {display:none}
+.map-pane[data-tool=link] :is(.scene-next-actions,.card-variants) {pointer-events:none}
+.writer-from-scene {justify-content:center;width:100%;gap:7px;margin:-1px 0 12px;padding:8px 9px;background:#302b38;color:#e1d1f4;border:1px solid #51465e;border-radius:6px;font-size:12px}
+.band-head .band-open {display:inline-flex;gap:5px;align-items:center;width:auto;padding:4px 7px;font-size:10.5px;white-space:nowrap}
+.timeline-card.with-variants .timeline-scene {padding-top:26px;justify-content:center}
+.timeline-variants {position:absolute;left:6px;top:4px;font-size:10px;padding:3px 5px}
+.writer-modal {width:min(530px,calc(100% - 24px))}
+.writer-location {display:flex;align-items:center;gap:7px;color:#b9b0c6;font-size:12px;line-height:1.4;margin:0 0 15px;overflow-wrap:anywhere}
+.writer-question input {font-size:16px;height:42px}
+.choice-body h3 {font-size:14px;font-weight:620;letter-spacing:-.15px;margin:19px 0 10px}
+.choice-rows {display:grid;gap:9px}
+.choice-row {min-width:0;background:#28272e;border:1px solid #434049;border-radius:8px;padding:10px 12px}
+.choice-row-top {display:flex;align-items:flex-end;gap:5px}
+.choice-row-top>label {flex:1;min-width:0;display:grid;gap:5px}
+.choice-number {font-size:11px;color:#d9bd95;font-weight:600}
+.choice-row input.choice-label {height:37px;font-size:14px;background:#201f26;color:var(--text);border:1px solid #49444f;border-radius:5px;padding:7px 9px;width:100%}
+.choice-row :is(input,select):focus-visible {outline:2px solid var(--accent);outline-offset:1px}
+.choice-row .remove-option {width:25px;height:36px}
+.choice-target {margin-top:5px}
+.choice-target summary {list-style:none;display:flex;align-items:center;gap:5px;width:fit-content;max-width:100%;min-height:25px;padding:2px;color:#c8bad7;font-size:12px;cursor:pointer}
+.choice-target summary:hover {color:#efe4ff}
+.choice-target summary::-webkit-details-marker {display:none}
+.choice-target[open] summary>.icon:last-child {transform:rotate(180deg)}
+.target-summary {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.choice-rule-count {display:flex;align-items:center;gap:2px;color:#cfb993}
+.choice-target-fields {border-top:1px solid #413c47;margin:5px 0 1px;padding-top:10px}
+.choice-target-fields label.field {margin:0 0 8px}
+.choice-target-fields label:last-child {margin-bottom:0}
+.choice-target-fields input,.choice-target-fields select {width:100%}
+.add-option {display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px 12px;border:1px dashed #64576e;border-radius:6px;font-size:12.5px;color:#ddcbed;margin-top:10px}
+.add-option:hover {background:#342d3d;border-color:#ad94c2}
+.choice-body .writer-error {color:#efaba9;font-size:12.5px;margin:10px 0 0}
+.choice-row.is-removed :is(.choice-row-top,.choice-target) {display:none}
+.removed-option {display:flex;align-items:center;justify-content:space-between;gap:7px;color:var(--muted);font-size:12px}
+.finder-modal {width:min(535px,calc(100% - 24px))}
+.writer-search>.search-box {width:100%;background:#24232b}
+.writer-search>.search-box input {min-width:0;width:100%;height:38px;color:var(--text);outline:0}
+.writer-results {display:grid;max-height:min(43dvh,360px);overflow-y:auto;margin-top:7px;scrollbar-gutter:stable}
+.outcome-picker .writer-results {max-height:160px}
+.writer-result {display:flex;align-items:center;gap:9px;min-width:0;text-align:left;padding:8px;border-bottom:1px solid #39353f;border-radius:4px;color:#c7b9d5}
+.writer-result:hover,.writer-result:focus-visible {background:#38323f}
+.writer-result>span {flex:1;min-width:0;display:grid;gap:3px}
+.writer-result strong,.writer-result small {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.writer-result strong {font-size:13px;color:#f0ebf5}.writer-result small,.no-matches {font-size:11.5px;color:#b8afc2}
+.no-matches {margin:9px}
+.writer-modal .modal-shell {display:flex;flex-direction:column;max-height:calc(100dvh - 40px)}
+.writer-modal #choice-form {display:flex;flex-direction:column;min-height:0}
+.choice-body {overflow:auto;min-height:0}
+.writer-modal .modal-head,.writer-modal .form-footer {flex:0 0 auto}
+@media(max-width:780px) {.project-search {padding:6px}.project-search>span:last-child {display:none}}
+@media(max-width:620px) {
+  .writer-modal .modal-shell {max-height:calc(100dvh - 28px)}
+  .choice-row {padding:8px 10px}.choice-row input.choice-label,.writer-question input,.writer-search input {font-size:16px}
+  .project-search {width:30px;height:28px;justify-content:center}
+  .card-variants {padding:2px 5px}.node-choice .node-detail:has(.card-variants){margin-top:2px}
+  .scene-next-actions {margin-top:1px}.scene-next-actions button {padding:2px 5px}
+}
 .map-pane .chapter-on-path {border-color:#8bd6b8;box-shadow:0 0 0 1px #8bd6b8}
 .map-pane .chapter-off-path:not(:hover):not(:focus-within):not(.selected) {opacity:.48}
 .chapter-route-note {position:absolute;z-index:2;left:20px;bottom:57px;display:flex;align-items:center;gap:1px;padding:2px 4px;border-color:#4f705f;background:#25362e}
@@ -501,10 +572,10 @@ kbd {font:11px var(--mono);color:#dfd8ed;background:#33313b;border:1px solid #49
     <header class="topbar">
       <button class="brand" data-action="page" data-page="map" aria-label="Развилка, к карте сюжета"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMTEiIGZpbGw9IiNjM2FmZmYiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IiMyNzIwMzMiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyN1YxM20wIDljOSAwIDE1LTMgMTUtMTAiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIyLjgiIGZpbGw9IiNjM2FmZmYiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjI4IiByPSIyLjgiIGZpbGw9IiNjM2FmZmYiLz48Y2lyY2xlIGN4PSIyNyIgY3k9IjExIiByPSIyLjgiIGZpbGw9IiNjM2FmZmYiLz48L2c+PC9zdmc+Cg==" alt="" width="32" height="32"><span>Развилка</span></button>
       <nav class="main-nav" aria-label="Разделы проекта" id="main-nav"></nav>
-      <div class="top-tools"><span id="save-state" title="Проект сохраняется в этом браузере"></span><span class="tool-divider"></span><button id="file-menu" class="file-button" data-action="file-menu" aria-label="Файл и настройки проекта" aria-haspopup="true"></button></div>
+      <div class="top-tools"><button class="project-search" data-action="find-project" title="Найти в проекте (Ctrl / ⌘ + K)" aria-label="Найти в проекте"><span data-icon="search"></span><span>Найти</span></button><span id="save-state" title="Проект сохраняется в этом браузере"></span><span class="tool-divider"></span><button id="file-menu" class="file-button" data-action="file-menu" aria-label="Файл и настройки проекта" aria-haspopup="true"></button></div>
     </header>
     <section id="project-cover" class="project-cover" aria-label="Текущий проект">
-      <div class="cover-inner"><button class="projects-link" data-action="projects"><span data-icon="folder"></span>Мои проекты<span data-icon="chevron-right"></span></button><h1 id="project-title"></h1><div id="project-meta" class="project-meta"></div></div>
+      <div class="cover-inner"><div class="project-links"><button class="projects-link" data-action="projects"><span data-icon="folder"></span>Мои проекты<span data-icon="chevron-right"></span></button><button class="start-own" data-action="new-project" id="start-own" hidden><span data-icon="plus"></span>Новая история</button></div><h1 id="project-title"></h1><div id="project-meta" class="project-meta"></div></div>
       <button class="read-button" data-action="play"><span data-icon="play"></span><span>Пройти историю</span></button>
     </section>
     <main class="workbench"><div class="workbar" id="workbar"></div><div id="workspace" class="workspace"></div></main>
@@ -752,9 +823,9 @@ const pointFor = n => narrowMap.matches ? n.mobile || narrowPositions.get(n.id) 
 function prepareNarrowMap(nodes) {
   narrowPositions.clear(); topPorts.clear();
   if(!narrowMap.matches || !nodes.length)return;
-  const edges=chapterEdges(), bySource=new Map(), local=new Map(nodes.map(n=>[n.id,n]));
-  for(const edge of edges){if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
-  const start=chapterById(ui.chapter).start;
+  const bySource=new Map(), local=new Map(nodes.map(n=>[n.id,n]));
+  for(const edge of project().edges){if(!local.has(edge.from)||!local.has(edge.to))continue;if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
+  const start=chapterById(nodes[0].chapter).start;
   const stack=[...nodes.map(n=>({id:n.id,depth:0,top:true})).reverse(),{id:start,depth:0,top:true}];
   let y=0;
   while(stack.length){
@@ -785,9 +856,9 @@ function graphBounds(nodes = chapterNodes()) {
   const x = Math.min(...nodes.map(n => pointFor(n).x)), y = Math.min(...nodes.map(n => pointFor(n).y));
   return { x,y,w:Math.max(...nodes.map(n => pointFor(n).x + shape(n).w)) - x,h:Math.max(...nodes.map(n => pointFor(n).y + shape(n).h)) - y };
 }
-function fitGraph(initial = false) {
+function fitGraph(initial = false,nodes = chapterNodes()) {
   const pane = mapPane(); if (!pane) return;
-  const b = graphBounds(), w = pane.clientWidth, h = pane.clientHeight;
+  const b = graphBounds(nodes), w = pane.clientWidth, h = pane.clientHeight;
   const top = narrowMap.matches ? 60 : 39, bottom = narrowMap.matches ? 43 : 50, side = w > 660 ? 36 : 18;
   camera.scale = Math.max(.2,Math.min(initial ? 1.08 : 1.22,(w-side*2)/b.w,(h-top-bottom)/b.h));
   if(initial && narrowMap.matches)camera.scale=Math.max(.88,camera.scale);
@@ -814,8 +885,13 @@ function zoomBy(factor, point) {
   camera.y = pivot.y - (pivot.y-camera.y)*next/camera.scale;
   camera.scale = next; applyCamera();
 }
-function revealNode(n) {
+function revealNode(n,readable=false) {
   const pane = mapPane(); if (!pane) return;
+  if(readable && camera.scale<.75){
+    const pos=pointFor(n), b=shape(n);
+    camera.scale=.94;camera.x=pane.clientWidth/2-(pos.x+b.w/2)*camera.scale;camera.y=pane.clientHeight/2-(pos.y+b.h/2)*camera.scale;
+    applyCamera();return;
+  }
   const b = shape(n), pos=pointFor(n), x = pos.x*camera.scale+camera.x, y = pos.y*camera.scale+camera.y;
   if (x < 10 || y < 10 || x+b.w*camera.scale > pane.clientWidth-10 || y+b.h*camera.scale > pane.clientHeight-25) {
     camera.x = pane.clientWidth/2 - (pos.x+b.w/2)*camera.scale;
@@ -828,17 +904,18 @@ function cardMarkup(n) {
   const outgoing = project().edges.filter(e=>e.from===n.id), outputs=outgoing.length;
   const exits=outgoing.map(e=>nodeById(e.to)).filter(target=>target.chapter!==n.chapter);
   const chapterBadge=exits.length===1?'Глава '+(project().chapters.findIndex(c=>c.id===exits[0].chapter)+1):'В другие главы';
-  const footer = n.type === 'choice' ? icon('branch',13) + countWords(outputs,['вариант','варианта','вариантов'])
+  const footer = n.type === 'choice' ? `<button class="card-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" title="Написать или изменить варианты выбора">${icon('branch',13)}Варианты${outputs?' · '+outputs:''}${icon('edit',11)}</button>`
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
   const start = chapterById(ui.chapter)?.start === n.id;
   const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):'';
+  const next=(n.type==='scene'||n.type==='dialogue')?`<div class="scene-next-actions"><button data-action="next-scene" data-id="${idAttr(n.id)}" aria-label="Добавить следующую сцену">${icon('plus',12)}Сцена</button><button data-action="new-choice" data-id="${idAttr(n.id)}" aria-label="Добавить выбор после сцены">${icon('branch',12)}Выбор</button></div>`:'';
   return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}${route}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
     ${start ? '<div class="start-label">'+icon('play',10)+'Начало</div>' : ''}
     ${n.art === 'radio' ? '<div class="node-art" role="img" aria-label="Старый приёмник в лесной сторожке"></div>' : ''}
     <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
     <h3>${escapeHtml(n.title || 'Без названия')}</h3>
-    ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}</div>
+    ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}${next}</div>
     ${exits.length?`<button class="chapter-exit" data-action="other-chapters" data-id="${idAttr(n.id)}" title="Перейти к продолжению в другой главе">${icon('layers',11)}${chapterBadge}${icon('arrow',11)}</button>`:''}
     ${handleMarkup(n)}
   </article>`;
@@ -856,7 +933,7 @@ function renderMap() {
     <div id="link-note" class="link-note" hidden></div>
     ${nodes.length?'<span class="canvas-hint">Нажмите стрелку у узла, чтобы добавить ветку. Потяните, чтобы соединить.</span>':''}
     <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
-    ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся история?</h3><p>Добавьте первую сцену этой главы.</p><button class="btn primary" data-action="add-node">'+icon('plus',16)+'Добавить узел</button></div>' : ''}
+    ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся глава?</h3><div class="first-actions"><button class="btn primary" data-action="first-scene">'+icon('scene',16)+'Написать сцену</button><button class="btn subtle" data-action="new-choice">'+icon('choice',16)+'Начать с выбора</button></div></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
     ${overview.path?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:''}
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
@@ -968,7 +1045,7 @@ function selectNode(id,reveal=false) {
     mapPane()?.querySelectorAll('.node-card').forEach(el=>{const active=el.dataset.node===id; el.classList.toggle('selected',active); el.setAttribute('aria-pressed',String(active));});
     renderInspector(); drawMinimap();
   }
-  if (reveal) requestAnimationFrame(()=>revealNode(n));
+  if (reveal) requestAnimationFrame(()=>revealNode(n,true));
 }
 function beginMapDrag(e) {
   const handle=e.target.closest('.node-handle');
@@ -1089,28 +1166,42 @@ function openAddPalette(button) {
 function insertPosition(n,source,side,drop,compact) {
   const size=compact?shape:desktopShape, position=compact?pointFor:node=>node;
   const box=size(n), origin=source?position(source):{x:0,y:0}, parent=source?size(source):{w:0,h:0};
-  const [dx,dy]=directions[side], gap=compact?55:92;
+  const stacked=compact&&!side&&source, [dx,dy]=directions[side||'right'], gap=compact?55:92;
   const base=drop?{x:drop.x-box.w/2,y:drop.y-box.h/2}:{
-    x:origin.x+(parent.w-box.w)/2+dx*((parent.w+box.w)/2+gap),
-    y:origin.y+(parent.h-box.h)/2+dy*((parent.h+box.h)/2+gap)
+    x:stacked?origin.x+(source.type==='choice'?30:0):origin.x+(parent.w-box.w)/2+dx*((parent.w+box.w)/2+gap),
+    y:stacked?origin.y+parent.h+gap:origin.y+(parent.h-box.h)/2+dy*((parent.h+box.h)/2+gap)
   };
-  const occupied=chapterNodes().map(item=>({...position(item),...size(item)}));
+  const occupied=project().nodes.filter(item=>item.chapter===n.chapter).map(item=>({...position(item),...size(item)}));
   for(let i=0;;i++){
-    const step=Math.ceil(i/2)*(i%2?1:-1);
+    const step=stacked?i:Math.ceil(i/2)*(i%2?1:-1);
     const x=Math.round(base.x+(dy?step*(box.w+34):0)),y=Math.round(base.y+(dx?step*(box.h+36):0));
     if(!occupied.some(b=>x<b.x+b.w+12&&x+box.w+12>b.x&&y<b.y+b.h+12&&y+box.h+12>b.y))return {x,y};
   }
 }
+function appendPlacedNode(p,chapter,type,title,source,side,spot) {
+  const n=makeNode(p,chapter,type,title,{x:0,y:0});
+  Object.assign(n,insertPosition(n,source,side||'right',narrowMap.matches?null:spot,false));
+  if(narrowMap.matches){
+    n.mobile=insertPosition(n,source,side,spot,true);
+    for(const current of p.nodes){
+      if(current.chapter!==chapter||current.mobile)continue;
+      const {x,y}=pointFor(current);
+      current.mobile={x,y};
+    }
+  }
+  p.nodes.push(n);
+  const c=chapterById(chapter);
+  if(!c.start)c.start=n.id;
+  return n;
+}
 function addFromPalette(type) {
   const pending=pendingInsert; pendingInsert=null;
   if(!pending||pending.chapter!==ui.chapter||!Object.hasOwn(NODE_TYPES,type))return;
-  const p=project(), source=nodeById(pending.source), side=pending.side||'right',compact=narrowMap.matches;
-  const n=makeNode(p,ui.chapter,type,freshTitles[type],{x:0,y:0});
-  Object.assign(n,insertPosition(n,source,side,compact?null:pending.spot,false));
-  if(compact)n.mobile=insertPosition(n,source,side,pending.spot,true);
-  changeProject(()=>{
-    if(compact)for(const current of chapterNodes()){if(!current.mobile){const pos=pointFor(current);current.mobile={x:pos.x,y:pos.y};}}
-    p.nodes.push(n);const c=chapterById(ui.chapter);if(!c.start)c.start=n.id;
+  if(type==='choice'){openChoiceWriter({source:pending.source,chapter:pending.chapter,side:pending.side,spot:pending.spot});return;}
+  const source=nodeById(pending.source), side=pending.side||'right';
+  let n;
+  changeProject(p=>{
+    n=appendPlacedNode(p,ui.chapter,type,freshTitles[type],source,side,pending.spot);
     if(source){const edge=makeEdge(source.id,n.id);setEndpoints(edge,side,opposite[side]);p.edges.push(edge);}
   });
   ui.selected=n.id;ui.source=null;ui.tool='pointer';
@@ -1495,7 +1586,7 @@ function timelineBand(band) {
   const {chapter,i,x,width,color,lore}=band;
   const chip=l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
   return `<section class="timeline-band" data-band="${idAttr(chapter.id)}" aria-label="${esc(chapterName(chapter.id))}" style="left:${x}px;width:${width}px;--band-color:${color}">
-    <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3>${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Открыть карту главы ${i+1}" title="Открыть карту главы">${icon('map',16)}</button></div></header>
+    <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3 title="${esc(chapter.title)}">${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Редактировать главу ${i+1}" title="Открыть карту главы">${icon('edit',13)}Редактировать</button></div></header>
     ${overview.showLore && lore.length?`<div class="band-lore" aria-label="Лор главы ${i+1}">${lore.map(chip).join('')}</div>`:''}
     ${band.nodes.length?'':`<button class="empty-band" data-action="timeline-first" data-id="${idAttr(chapter.id)}">${icon('plus',15)}Добавить первую сцену</button>`}
   </section>`;
@@ -1505,8 +1596,10 @@ function timelineCard(n,point,index,memory,tip) {
   const incoming=index.incoming.get(n.id), label=incoming.length===1?incoming[0].label:'';
   const onPath=memory?.visited.has(n.id);
   const caption=label?`<small title="${esc(label)}">${icon('branch',10)}${esc(label)}</small>`:'';
-  return `<article class="timeline-card${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
-    <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
+  const choice=n.type==='choice';
+  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
+    <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${choice?'':typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
+    ${choice?`<button class="timeline-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" aria-label="${esc('Редактировать варианты «'+n.title+'»')}">${icon('choice',12)}Варианты · ${index.outgoing.get(n.id).length}${icon('edit',10)}</button>`:''}
     <button class="scene-eye" data-action="trace-to" data-id="${idAttr(n.id)}" aria-label="${esc('Показать путь к сцене «'+n.title+'»')}" title="Показать путь к этой сцене">${icon(onPath?'check':'eye',14)}</button></article>`;
 }
 
@@ -1698,6 +1791,198 @@ function openLooseLore() {
 
 </script>
 <script>
+const foldText = text => String(text || '').toLocaleLowerCase('ru').replace(/ё/g,'е');
+let refreshAfterWriting=false;
+
+function writingIndex(p) {
+  const chapters=new Map(p.chapters.map((c,i)=>[c.id,{number:i+1,name:`Глава ${i+1} · ${c.title}`}]));
+  const labels=new Map();
+  for(const e of p.edges) {
+    if(!e.label)continue;
+    if(!labels.has(e.from))labels.set(e.from,[]);
+    labels.get(e.from).push(e.label);
+  }
+  const item=(kind,record,meta,glyph,body,chapter=null)=>({
+    kind,id:record.id,title:record.title,meta,glyph,chapter,name:foldText(record.title),
+    words:foldText([record.title,meta,...body].join(' '))
+  });
+  return [
+    ...p.nodes.map(n=>item('node',n,chapters.get(n.chapter).name+' · '+NODE_TYPES[n.type].name+' #'+pad(n.no),
+      NODE_TYPES[n.type].icon,[n.description,...(labels.get(n.id)||[]),...n.lines.map(l=>l.speaker+' '+l.text)],chapters.get(n.chapter).number)),
+    ...p.lore.map(l=>item('lore',l,'База лора · '+LORE_KINDS[l.kind].name,LORE_KINDS[l.kind].icon,[l.description]))
+  ];
+}
+
+function writerSearch(purpose) {
+  const global=purpose==='project', label=global?'Название, реплика или текст варианта':'Найти сцену в любой главе';
+  return `<div class="writer-search" data-purpose="${purpose}"><label class="search-box">${icon('search',17)}<input type="search" placeholder="${label}" aria-label="${label}" autocomplete="off" ${global?'data-first':''}></label><div class="writer-results" aria-label="Результаты поиска"></div></div>`;
+}
+
+function drawWriterResults(host) {
+  const input=foldText(host.querySelector('input').value.trim());
+  const scope=input.match(/(?:^|\s)(?:глава|гл\.?)\s*(\d+)(?=\s|$)/u);
+  const query=scope?input.replace(scope[0],' ').trim():input;
+  const words=query.split(/\s+/).filter(Boolean);
+  const target=host.dataset.purpose==='target';
+  const hits=modalContext.entries.filter(item=>(!target||item.kind==='node') && (!scope||item.chapter===Number(scope[1])) && words.every(w=>item.words.includes(w)));
+  if(query)hits.sort((a,b)=>Number(b.name.startsWith(query))-Number(a.name.startsWith(query)) || Number(b.name.includes(query))-Number(a.name.includes(query)));
+  const limit=Number(host.dataset.limit)||30;
+  const rows=hits.slice(0,limit).map(item=>{
+    const action=target?'choose-destination':item.kind==='node'?'jump':'edit-lore';
+    return `<button type="button" class="writer-result" data-action="${action}" data-id="${idAttr(item.id)}">${icon(item.glyph,16)}<span><strong>${esc(item.title)}</strong><small>${esc(item.meta)}</small></span>${icon('chevron-right',14)}</button>`;
+  }).join('');
+  host.querySelector('.writer-results').innerHTML=(rows||'<p class="no-matches" role="status">Совпадений нет</p>')+
+    (hits.length>limit?'<button type="button" class="text-action" data-action="more-matches">Показать ещё</button>':'');
+}
+
+function openProjectSearch() {
+  modal('Найти в проекте','<div class="modal-body">'+writerSearch('project')+'</div>','finder-modal');
+  modalContext={entries:writingIndex(project())};
+  drawWriterResults(dialog.querySelector('.writer-search'));
+}
+
+const outcomeNames={scene:'Новая сцена',ending:'Новый финал',dialogue:'Новый диалог',choice:'Новый выбор',existing:'Готовая сцена'};
+
+function choiceRow(edge,index) {
+  const dest=edge?nodeById(edge.to):null, mode=dest?'existing':'scene';
+  const description=dest?chapterName(dest.chapter)+' → '+dest.title:outcomeNames.scene;
+  const locked=edge?.rules?.length?`<span class="choice-rule-count" title="Условия перехода">${icon('sliders',12)}${edge.rules.length}</span>`:'';
+  return `<section class="choice-row" data-edge="${idAttr(edge?.id||'')}" data-destination="${idAttr(dest?.id||'')}" data-original-target="${idAttr(dest?.id||'')}">
+    <div class="choice-row-top"><label><span class="choice-number">Вариант ${index+1}</span><input class="choice-label" maxlength="140" aria-label="Текст варианта ${index+1}" value="${esc(edge?.label)}" placeholder="${esc(dest?.title||(index===0?'Например, передать письмо':index===1?'Например, сжечь письмо':'Что выберет читатель?'))}"></label>
+    <button type="button" class="icon-button remove-option" data-action="remove-option" aria-label="Убрать вариант ${index+1}" title="Убрать вариант">${icon('x',14)}</button></div>
+    <details class="choice-target"><summary>${icon('arrow',13)}<span class="target-summary">${esc(description)}</span>${locked}${icon('chevron-down',12)}</summary>
+    <div class="choice-target-fields"><label class="field"><span>Куда ведёт вариант</span><select class="outcome-mode">${Object.entries(outcomeNames).map(([key,label])=>`<option value="${key}" ${key===mode?'selected':''}>${label}</option>`).join('')}</select></label>
+    <label class="field outcome-title" ${dest?'hidden':''}><span>Название новой карточки</span><input maxlength="240" placeholder="Как в тексте варианта"></label>
+    <div class="outcome-picker" ${dest?'':'hidden'}></div></div></details>
+    <div class="removed-option" hidden><span></span><button type="button" class="text-action" data-action="restore-option">Вернуть</button></div></section>`;
+}
+
+function openChoiceWriter({id=null,source=null,chapter=ui.chapter,side=null,spot=null}={}) {
+  const n=id?nodeById(id):null, parent=source?nodeById(source):null;
+  const edges=n?project().edges.filter(e=>e.from===id):[];
+  const rows=edges.map(choiceRow);
+  while(rows.length<2)rows.push(choiceRow(null,rows.length));
+  const context=parent?'После сцены «'+parent.title+'»':chapterName(n?.chapter||chapter);
+  const body=`<form id="choice-form"><div class="modal-body choice-body"><div class="writer-location">${icon(parent?'branch':'layers',14)}${esc(context)}</div>
+    <label class="field writer-question"><span>Момент выбора</span><input data-first name="question" required maxlength="240" value="${esc(n?.title)}" placeholder="Что сделать с письмом?"></label>
+    <h3>Варианты для читателя</h3><div class="choice-rows">${rows.join('')}</div>
+    <button type="button" class="add-option" data-action="add-option">${icon('plus',15)}Ещё вариант</button>
+    <p class="writer-error" role="alert" hidden></p></div>${formFooter(n?'Сохранить':'Создать выбор')}</form>`;
+  modal(n?'Варианты выбора':'Новый выбор',body,'writer-modal');
+  modalContext={id,source,chapter:n?.chapter||chapter,side,spot,entries:writingIndex(project()),projectId:project().id};
+  // Each picker only renders its search results when the author opens it.
+  dialog.querySelectorAll('.choice-target').forEach(bindChoiceTarget);
+  if(n)dialog.querySelector('.choice-label')?.focus({preventScroll:true});
+}
+
+function refreshChoiceTarget(row) {
+  const mode=row.querySelector('.outcome-mode').value, existing=mode==='existing';
+  row.querySelector('.outcome-title').hidden=existing;
+  const picker=row.querySelector('.outcome-picker');
+  picker.hidden=!existing;
+  if(existing&&!picker.firstElementChild&&row.querySelector('details').open){
+    picker.innerHTML=writerSearch('target');
+    drawWriterResults(picker.firstElementChild);
+  }
+  const dest=existing?nodeById(row.dataset.destination):null;
+  const newName=row.querySelector('.outcome-title input').value.trim();
+  row.querySelector('.target-summary').textContent=existing?(dest?chapterName(dest.chapter)+' → '+dest.title:'Выбрать готовую сцену'):outcomeNames[mode]+(newName?' · '+newName:'');
+}
+
+function bindChoiceTarget(details) {
+  details.addEventListener('toggle',()=>{if(details.open&&dialog.open&&details.isConnected&&modalContext.entries)refreshChoiceTarget(details.closest('.choice-row'));});
+}
+
+function numberChoiceRows() {
+  const rows=dialog.querySelectorAll('.choice-row:not(.is-removed)');
+  rows.forEach((row,i)=>{
+    row.querySelector('.choice-number').textContent='Вариант '+(i+1);
+    row.querySelector('.choice-label').setAttribute('aria-label','Текст варианта '+(i+1));
+    row.querySelector('.remove-option').setAttribute('aria-label','Убрать вариант '+(i+1));
+  });
+}
+
+function addChoiceRow() {
+  const list=dialog.querySelector('.choice-rows');
+  list.insertAdjacentHTML('beforeend',choiceRow(null,list.children.length));
+  const row=list.lastElementChild;
+  bindChoiceTarget(row.querySelector('details'));
+  numberChoiceRows();row.querySelector('.choice-label').focus();
+}
+
+function toggleChoiceRow(row,remove) {
+  if(remove&&!row.dataset.edge){row.remove();numberChoiceRows();dialog.querySelector('.add-option').focus();return;}
+  row.classList.toggle('is-removed',remove);
+  const note=row.querySelector('.removed-option');
+  note.hidden=!remove;
+  if(remove){
+    const used=project().edges.filter(e=>e.rules?.some(r=>r.kind==='edge'&&r.ref===row.dataset.edge)).length;
+    note.querySelector('span').textContent='Вариант будет убран'+(used?' · от него зависит '+countWords(used,['переход','перехода','переходов']):'');
+    note.querySelector('button').focus();
+  }else row.querySelector('.choice-label').focus();
+  numberChoiceRows();
+}
+
+function saveWrittenChoice(form,ctx) {
+  const error=form.querySelector('.writer-error');
+  function fail(message){error.textContent=message;error.hidden=false;}
+  const p=project(), parent=nodeById(ctx.source);
+  let choice=nodeById(ctx.id);
+  if(p.id!==ctx.projectId || !chapterById(ctx.chapter) || (ctx.id&&choice?.type!=='choice') || (ctx.source&&!parent)){
+    fail('Исходная сцена изменилась. Откройте её на карте.');return;
+  }
+  const question=form.elements.question, typedTitle=question.value.trim();
+  const title=choice&&typedTitle===question.defaultValue.trim()?choice.title:typedTitle;
+  const edits=[], removed=new Set();
+  for(const row of form.querySelectorAll('.choice-row')){
+    const edge=row.dataset.edge?p.edges.find(e=>e.id===row.dataset.edge&&e.from===ctx.id):null;
+    if(row.classList.contains('is-removed')){if(edge)removed.add(edge.id);continue;}
+    const field=row.querySelector('.choice-label'), typedLabel=field.value.trim();
+    const kind=row.querySelector('.outcome-mode').value, sameTarget=kind==='existing'&&row.dataset.destination===row.dataset.originalTarget;
+    const sameLabel=typedLabel===field.defaultValue.trim();
+    if(row.dataset.edge&&sameTarget&&sameLabel)continue;
+    if(row.dataset.edge&&!edge){fail('Этот вариант удалён в другой вкладке. Скопируйте его текст в новый вариант.');return;}
+    const label=edge&&sameLabel?edge.label:typedLabel;
+    const name=row.querySelector('.outcome-title input').value.trim();
+    const dest=kind==='existing'?nodeById(edge&&sameTarget?edge.to:row.dataset.destination):null;
+    if(kind==='existing'&&!dest){
+      row.querySelector('details').open=true;refreshChoiceTarget(row);
+      fail('Выберите сцену для этого варианта.');row.querySelector('.writer-search input')?.focus();return;
+    }
+    if(!edge&&!label&&!name&&!dest)continue;
+    if(!edge || edge.label!==label || edge.to!==dest?.id)edits.push({edge,kind,label,name,dest});
+  }
+  if(choice&&choice.title===title&&!edits.length&&!removed.size){closeModal();return;}
+  const created=!choice, localNodes=[];
+  if(narrowMap.matches)prepareNarrowMap(p.nodes.filter(n=>n.chapter===ctx.chapter));
+  changeProject(()=>{
+    if(!choice){
+      choice=appendPlacedNode(p,ctx.chapter,'choice',title,parent,ctx.side,ctx.spot);
+      if(parent){const incoming=makeEdge(parent.id,choice.id);if(ctx.side)setEndpoints(incoming,ctx.side,opposite[ctx.side]);p.edges.push(incoming);}
+    }else choice.title=title;
+    if(removed.size)p.edges=p.edges.filter(e=>!removed.has(e.id));
+    for(const edit of edits){
+      const dest=edit.dest||appendPlacedNode(p,ctx.chapter,edit.kind,edit.name||edit.label||freshTitles[edit.kind],choice);
+      if(!edit.dest)localNodes.push(dest);
+      if(edit.edge){
+        if(edit.edge.to!==dest.id)delete edit.edge.ports;
+        edit.edge.to=dest.id;edit.edge.label=edit.label;
+      }else p.edges.push(makeEdge(choice.id,dest.id,edit.label));
+    }
+  });
+  refreshAfterWriting=false;closeModal();
+  if(ui.page==='timeline'&&!created){renderAll();}
+  else {
+    ui.page='map';ui.selected=choice.id;ui.chapter=ctx.chapter;ui.source=null;ui.tool='pointer';
+    renderAll();
+    if(created)fitGraph(true,[...(parent?[parent]:[]),choice,...localNodes]);
+    revealNode(choice);
+  }
+  toast(created?'Выбор добавлен на карту':'Варианты сохранены');
+}
+
+</script>
+<script>
 const byId = id => document.getElementById(id);
 const esc = escapeHtml;
 const views = {map:['Карта сюжета','map'], lore:['База лора','book'], dialogues:['Диалоги','bubbles']};
@@ -1749,6 +2034,7 @@ function renderAll(fit=false) {
   document.title=(allChapters?'Все главы':views[navPage][0])+' · '+p.title+' — Развилка';
   byId('main-nav').innerHTML=Object.entries(views).map(([key,[title,glyph]])=>`<button data-action="page" data-page="${key}" class="nav-item ${key===navPage?'active':''}" ${key===navPage?'aria-current="page"':''}>${icon(glyph,17)}<span>${title}</span></button>`).join('');
   byId('project-title').textContent=p.title;
+  byId('start-own').hidden=!(p.id==='quiet-air'&&studio.projects.length===1);
   byId('project-cover').classList.toggle('plain',!p.artwork);
   byId('project-meta').innerHTML=`<span>${icon('book',15)}Визуальная новелла</span>${p.genre?'<i></i><span>'+esc(p.genre)+'</span>':''}`;
   byId('file-menu').innerHTML=icon('folder',16)+'<span>Файл</span>'+icon('chevron-down',13);
@@ -1789,6 +2075,7 @@ function renderInspector() {
   panel.innerHTML=`<div class="inspector-head"><span>${icon('panel',16)}Детали узла</span>${iconButton('hide-inspector','x','Закрыть детали узла')}</div>
     <div class="inspector-scroll"><div class="inspector-id"><button class="type-edit" data-action="node-type" title="Изменить тип узла">${typeTag(n.type)}${icon('chevron-down',12)}</button><span class="inspector-ident"><span class="inspector-no">УЗЕЛ #${pad(n.no)}</span>${iconButton('toggle-important','spark',n.important?'Снять отметку «Ключевой момент»':'Отметить ключевой момент',`aria-pressed="${!!n.important}"`)}</span></div>
     <label class="field"><span>Название</span><input data-edit="title" data-id="${idAttr(n.id)}" value="${esc(n.title)}" maxlength="240" placeholder="Название узла"></label>
+    ${n.type!=='ending'?`<button class="writer-from-scene" data-action="${n.type==='choice'?'edit-choice':'new-choice'}" data-id="${idAttr(n.id)}">${icon('branch',15)}${n.type==='choice'?'Редактировать варианты':'Добавить выбор после сцены'}</button>`:''}
     <label class="field"><span>Описание</span><textarea data-edit="description" data-id="${idAttr(n.id)}" rows="4" placeholder="Что происходит в этой точке истории?">${esc(n.description)}</textarea></label>
     <section class="inspector-section"><div class="section-line"><h3>${icon('book',15)}Связанный лор</h3>${iconButton('attach-lore','plus','Привязать запись лора')}</div>
     <div class="chips">${related.length?related.map(l=>`<button class="plain-chip" data-action="edit-lore" data-id="${idAttr(l.id)}">${loreChip(l)}</button>`).join(''):'<button class="text-action" data-action="attach-lore">Привязать запись</button>'}</div></section>
@@ -1825,11 +2112,38 @@ function drawCollectionContent() {
   }
 }
 function emptyCollection(title,subtitle,glyph) { return `<div class="empty-collection"><div class="empty-symbol">${icon(glyph,27)}</div><h3>${title}</h3><p>${subtitle}</p></div>`; }
-function goPage(page) { ui.page=page==='map'?lastDiagram:page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(ui.page==='map'); }
+function goPage(page) { ui.page=page==='map'?lastDiagram:page; ui.search=''; ui.kind='all'; setMapTool('pointer'); renderAll(); }
+function placeKey(){return 'razvilka.place.'+project().id+(narrowMap.matches?'.narrow':'.wide');}
+function rememberPlace() {
+  const pane=mapPane(), w=pane?.clientWidth||lastPaneSize?.w, h=pane?.clientHeight||lastPaneSize?.h;
+  const map=w&&h?{x:(w/2-camera.x)/camera.scale,y:(h/2-camera.y)/camera.scale,scale:camera.scale}:null;
+  const place={diagram:lastDiagram,chapter:ui.chapter,selected:ui.selected,map,inspector:ui.inspector,
+    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path};
+  try {sessionStorage.setItem(placeKey(),JSON.stringify(place));} catch { /* The editor also works without tab storage. */ }
+}
+function resumePlace() {
+  let place;
+  try {place=JSON.parse(sessionStorage.getItem(placeKey()));} catch { /* An unavailable view starts at the chapter entrance. */ }
+  if(!place||!chapterById(place.chapter)){renderAll(true);return;}
+  ui.chapter=place.chapter;
+  ui.selected=nodeById(place.selected)?.chapter===ui.chapter?place.selected:chapterById(ui.chapter).start;
+  ui.page=place.diagram==='timeline'?'timeline':'map';
+  if(typeof place.inspector==='boolean')ui.inspector=place.inspector;
+  if(overview.projectId!==project().id)resetOverview();
+  if(Number.isFinite(place.zoom)&&place.zoom>0)overview.zoom=place.zoom;
+  if(Number.isFinite(place.left))overview.left=place.left;
+  if(Number.isFinite(place.top))overview.top=place.top;
+  if(typeof place.lore==='boolean')overview.showLore=place.lore;
+  if(Array.isArray(place.path)&&place.path.every(s=>typeof s?.node==='string'&&(s.via===null||typeof s.via==='string')))overview.path=place.path;
+  const m=place.map, restore=ui.page==='map'&&m&&Number.isFinite(m.x)&&Number.isFinite(m.y)&&m.scale>=.17&&m.scale<=2.3;
+  renderAll(!restore);
+  if(restore){const pane=mapPane();camera.scale=m.scale;camera.x=pane.clientWidth/2-m.x*m.scale;camera.y=pane.clientHeight/2-m.y*m.scale;applyCamera();}
+}
 function activateProject(id) {
+  rememberPlace();
   studio.active=id; past=[]; future=[]; ui.page=project().chapters.length>1?'timeline':'map'; ui.chapter=project().chapters[0].id; ui.selected=project().chapters[0].start;
   resetOverview();
-  ui.inspector=innerWidth>=1000; ui.tool='pointer'; ui.source=null; ui.search='';ui.kind='all'; persist(); closeModal(); renderAll(true);
+  ui.inspector=innerWidth>=1000; ui.tool='pointer'; ui.source=null; ui.search='';ui.kind='all'; persist(); closeModal(); resumePlace();
 }
 function openExampleRoutes() {
   const fresh=seedProject(),template=JSON.stringify(fresh);
@@ -1927,7 +2241,7 @@ function deleteNode(id) {
   });
 }
 function showShortcuts() {
-  const keys=[['Добавить узел','N'],['Выделение','V'],['Перемещение карты','H'],['Временно перемещать карту','Пробел'],['Связать узлы','C'],['Показать всю карту','F'],['Удалить выбранный узел','Delete'],['Отменить действие','Ctrl / ⌘ + Z'],['Повторить действие','Ctrl / ⌘ + Shift + Z'],['Закрыть окно или выйти из связи','Esc']];
+  const keys=[['Найти в проекте','Ctrl / ⌘ + K'],['Добавить узел','N'],['Выделение','V'],['Перемещение карты','H'],['Временно перемещать карту','Пробел'],['Связать узлы','C'],['Показать всю карту','F'],['Удалить выбранный узел','Delete'],['Отменить действие','Ctrl / ⌘ + Z'],['Повторить действие','Ctrl / ⌘ + Shift + Z'],['Закрыть окно или выйти из связи','Esc']];
   modal('Горячие клавиши','<div class="modal-body key-list">'+keys.map(([l,k])=>`<div><span>${l}</span><kbd>${k}</kbd></div>`).join('')+'</div>');
 }
 function setChapter(id) {
@@ -1940,7 +2254,25 @@ function handleAction(action,button,e) {
     case 'all-chapters': goPage('timeline');break;
     case 'timeline-lore': overview.showLore=!overview.showLore;renderAll();break;
     case 'loose-lore': openLooseLore();break;
-    case 'timeline-first': setChapter(id);openAddPalette(document.querySelector('.add-button'));break;
+    case 'timeline-first': case 'first-scene':
+      if(action==='timeline-first')setChapter(id);
+      pendingInsert={chapter:ui.chapter,side:'right'};addFromPalette('scene');break;
+    case 'next-scene': pendingInsert={chapter:ui.chapter,source:id,side:narrowMap.matches?'bottom':'right'};addFromPalette('scene');break;
+    case 'find-project': openProjectSearch();break;
+    case 'new-choice': openChoiceWriter({source:id});break;
+    case 'edit-choice': openChoiceWriter({id});break;
+    case 'add-option': addChoiceRow();break;
+    case 'remove-option': case 'restore-option': toggleChoiceRow(button.closest('.choice-row'),action==='remove-option');break;
+    case 'more-matches': {
+      const host=button.closest('.writer-search');
+      const prev=Number(host.dataset.limit)||30;
+      host.dataset.limit=prev+30;drawWriterResults(host);
+      host.querySelectorAll('.writer-result')[prev]?.focus();break;
+    }
+    case 'choose-destination': {
+      const row=button.closest('.choice-row'), details=row.querySelector('details');
+      row.dataset.destination=id;refreshChoiceTarget(row);details.open=false;details.querySelector('summary').focus();break;
+    }
     case 'trace-toggle': startTimelinePath();break;
     case 'clear-chapter-route': overview.path=null;renderAll();break;
     case 'trace-to': case 'trace-edge': traceTimeline(id,action==='trace-edge');break;
@@ -1953,7 +2285,7 @@ function handleAction(action,button,e) {
     case 'timeline-out': zoomTimeline(overview.zoom/1.2);break;
     case 'timeline-actual': zoomTimeline(1);break;
     case 'timeline-fit': zoomTimeline(1,true);break;
-    case 'file-menu': showMenu(button,menuItem('projects','grid','Мои проекты')+menuItem('project-settings','sliders','Параметры проекта')+'<hr>'+menuItem('export','download','Скачать проект')+menuItem('import','upload','Открыть из файла')+'<hr>'+menuItem('shortcuts','keyboard','Горячие клавиши'));break;
+    case 'file-menu': showMenu(button,menuItem('projects','grid','Мои проекты')+menuItem('project-settings','sliders','Параметры проекта')+'<hr>'+menuItem('undo','undo','Отменить действие',past.length?'':'disabled')+menuItem('redo','redo','Повторить действие',future.length?'':'disabled')+'<hr>'+menuItem('export','download','Скачать проект')+menuItem('import','upload','Открыть из файла')+'<hr>'+menuItem('shortcuts','keyboard','Горячие клавиши'));break;
     case 'projects': showProjects();break;
     case 'new-project': openProjectForm(true);break;
     case 'project-settings': openProjectForm(false);break;
@@ -2035,9 +2367,13 @@ document.addEventListener('pointerdown',e=>{
   if(!menu.hidden&&!menu.contains(e.target)&&!e.target.closest('[aria-haspopup],.type-edit,[data-action="node-options"]'))dismissMenu();
 });
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeModal();});
-dialog.addEventListener('close',()=>{playSession=null;});
+dialog.addEventListener('close',()=>{playSession=null;if(refreshAfterWriting&&!dialog.open){refreshAfterWriting=false;renderAll();}});
 byId('import-file').addEventListener('change',e=>importProject(e.target.files[0]));
 document.addEventListener('change',e=>{
+  if(e.target.matches('.outcome-mode')){
+    const row=e.target.closest('.choice-row');refreshChoiceTarget(row);
+    if(e.target.value==='existing')row.querySelector('.writer-search input')?.focus();
+  }
   if(e.target.id==='timeline-chapter')scrollToTimelineChapter(e.target.value);
   if(e.target.matches('.rule-test')) {
     const kind=e.target.value.split('-')[0], ref=e.target.closest('.rule-row').querySelector('.rule-ref');
@@ -2054,6 +2390,8 @@ document.addEventListener('focusout',e=>{
 });
 document.addEventListener('input',e=>{
   const el=e.target;
+  if(el.matches('.writer-search input')){const host=el.closest('.writer-search');delete host.dataset.limit;drawWriterResults(host);return;}
+  if(el.matches('.outcome-title input')){refreshChoiceTarget(el.closest('.choice-row'));return;}
   if(el.id==='search'){ui.search=el.value;drawCollectionContent();return;}
   if(!el.dataset.edit)return;
   const n=nodeById(el.dataset.id);if(!n)return;
@@ -2069,6 +2407,7 @@ dialog.addEventListener('submit',e=>{
     if (!field.value.trim()) { field.setCustomValidity('Заполните это поле');field.reportValidity(); field.addEventListener('input',()=>field.setCustomValidity(''),{once:true});return; }
   }
   switch(form.id) {
+    case 'choice-form': saveWrittenChoice(form,ctx);break;
     case 'project-form': {
       if(ctx.isNew){const p=blankProject(value('title'),value('genre'));studio.projects.push(p);activateProject(p.id);toast('Новый проект создан');}
       else{changeProject(p=>{p.title=value('title');p.genre=value('genre');});closeModal();renderAll();}break;
@@ -2121,6 +2460,21 @@ dialog.addEventListener('submit',e=>{
 });
 document.addEventListener('keydown',e=>{
   const editing=e.target.matches('input,textarea,select,[contenteditable="true"]');
+  if((e.ctrlKey||e.metaKey)&&e.code==='KeyK'&&!dialog.open){e.preventDefault();openProjectSearch();return;}
+  const search=e.target.closest('.writer-search');
+  if(search&&!e.isComposing&&['ArrowDown','ArrowUp','Enter'].includes(e.key)){
+    const items=[...search.querySelectorAll('.writer-result')], ix=items.indexOf(e.target);
+    if(e.key==='Enter'&&e.target.matches('input')){e.preventDefault();items[0]?.click();return;}
+    if(e.key!=='Enter'){e.preventDefault();if(e.key==='ArrowUp'&&ix<=0)search.querySelector('input').focus();else items[Math.max(0,Math.min(items.length-1,ix+(e.key==='ArrowDown'?1:-1)))]?.focus();return;}
+  }
+  if(e.key==='Enter'&&!e.isComposing&&e.target.closest('#choice-form')){
+    const form=byId('choice-form');
+    if(e.ctrlKey||e.metaKey){e.preventDefault();form.requestSubmit();return;}
+    if(e.target.matches('[name="question"],.choice-label')){
+      const labels=[...form.querySelectorAll('.choice-row:not(.is-removed) .choice-label')], next=labels[labels.indexOf(e.target)+1];
+      if(next){e.preventDefault();next.focus();return;}
+    }
+  }
   if((e.key==='Enter'||e.key===' ')&&e.target.matches('.timeline-hit')){e.preventDefault();traceTimeline(e.target.dataset.id,true);return;}
   if(e.key==='Escape'){if(connectorDrag){cancelConnector();return;}if(!menu.hidden){dismissMenu();return;}if(!dialog.open)setMapTool('pointer');return;}
   if(dialog.open||editing)return;
@@ -2147,14 +2501,22 @@ window.addEventListener('keyup',e=>{if(e.code==='Space')releaseSpace();});
 window.addEventListener('blur',releaseSpace);
 window.addEventListener('storage',e=>{
   if(e.key!==STORAGE_KEY||!e.newValue)return;
-  if(dialog.open||document.activeElement?.matches('[data-edit]')) {toast('Проект изменён в другой вкладке');return;}
+  const writing=dialog.open&&!!byId('choice-form');
+  if((dialog.open&&!writing)||document.activeElement?.matches('[data-edit]')) {toast('Проект изменён в другой вкладке');return;}
   const previous=studio.active;studio=readStudio();
   if(studio.projects.some(p=>p.id===previous))studio.active=previous;
-  past=[];future=[];renderAll();
+  past=[];future=[];
+  if(writing){
+    refreshAfterWriting=true;modalContext.entries=writingIndex(project());
+    dialog.querySelectorAll('.writer-search').forEach(drawWriterResults);
+    return;
+  }
+  renderAll();
 });
 document.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=icon(el.dataset.icon,el.dataset.icon==='chevron-right'?12:15);});
 narrowMap.addEventListener('change',()=>{ui.inspector=!narrowMap.matches&&innerWidth>=1000;if(ui.page==='map')renderAll(true);});
-persist();renderAll(true);
+window.addEventListener('pagehide',rememberPlace);
+persist();resumePlace();
 
 </script>
 </body>

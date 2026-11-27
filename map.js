@@ -8,9 +8,9 @@ const pointFor = n => narrowMap.matches ? n.mobile || narrowPositions.get(n.id) 
 function prepareNarrowMap(nodes) {
   narrowPositions.clear(); topPorts.clear();
   if(!narrowMap.matches || !nodes.length)return;
-  const edges=chapterEdges(), bySource=new Map(), local=new Map(nodes.map(n=>[n.id,n]));
-  for(const edge of edges){if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
-  const start=chapterById(ui.chapter).start;
+  const bySource=new Map(), local=new Map(nodes.map(n=>[n.id,n]));
+  for(const edge of project().edges){if(!local.has(edge.from)||!local.has(edge.to))continue;if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
+  const start=chapterById(nodes[0].chapter).start;
   const stack=[...nodes.map(n=>({id:n.id,depth:0,top:true})).reverse(),{id:start,depth:0,top:true}];
   let y=0;
   while(stack.length){
@@ -41,9 +41,9 @@ function graphBounds(nodes = chapterNodes()) {
   const x = Math.min(...nodes.map(n => pointFor(n).x)), y = Math.min(...nodes.map(n => pointFor(n).y));
   return { x,y,w:Math.max(...nodes.map(n => pointFor(n).x + shape(n).w)) - x,h:Math.max(...nodes.map(n => pointFor(n).y + shape(n).h)) - y };
 }
-function fitGraph(initial = false) {
+function fitGraph(initial = false,nodes = chapterNodes()) {
   const pane = mapPane(); if (!pane) return;
-  const b = graphBounds(), w = pane.clientWidth, h = pane.clientHeight;
+  const b = graphBounds(nodes), w = pane.clientWidth, h = pane.clientHeight;
   const top = narrowMap.matches ? 60 : 39, bottom = narrowMap.matches ? 43 : 50, side = w > 660 ? 36 : 18;
   camera.scale = Math.max(.2,Math.min(initial ? 1.08 : 1.22,(w-side*2)/b.w,(h-top-bottom)/b.h));
   if(initial && narrowMap.matches)camera.scale=Math.max(.88,camera.scale);
@@ -70,8 +70,13 @@ function zoomBy(factor, point) {
   camera.y = pivot.y - (pivot.y-camera.y)*next/camera.scale;
   camera.scale = next; applyCamera();
 }
-function revealNode(n) {
+function revealNode(n,readable=false) {
   const pane = mapPane(); if (!pane) return;
+  if(readable && camera.scale<.75){
+    const pos=pointFor(n), b=shape(n);
+    camera.scale=.94;camera.x=pane.clientWidth/2-(pos.x+b.w/2)*camera.scale;camera.y=pane.clientHeight/2-(pos.y+b.h/2)*camera.scale;
+    applyCamera();return;
+  }
   const b = shape(n), pos=pointFor(n), x = pos.x*camera.scale+camera.x, y = pos.y*camera.scale+camera.y;
   if (x < 10 || y < 10 || x+b.w*camera.scale > pane.clientWidth-10 || y+b.h*camera.scale > pane.clientHeight-25) {
     camera.x = pane.clientWidth/2 - (pos.x+b.w/2)*camera.scale;
@@ -84,17 +89,18 @@ function cardMarkup(n) {
   const outgoing = project().edges.filter(e=>e.from===n.id), outputs=outgoing.length;
   const exits=outgoing.map(e=>nodeById(e.to)).filter(target=>target.chapter!==n.chapter);
   const chapterBadge=exits.length===1?'Глава '+(project().chapters.findIndex(c=>c.id===exits[0].chapter)+1):'В другие главы';
-  const footer = n.type === 'choice' ? icon('branch',13) + countWords(outputs,['вариант','варианта','вариантов'])
+  const footer = n.type === 'choice' ? `<button class="card-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" title="Написать или изменить варианты выбора">${icon('branch',13)}Варианты${outputs?' · '+outputs:''}${icon('edit',11)}</button>`
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
   const start = chapterById(ui.chapter)?.start === n.id;
   const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):'';
+  const next=(n.type==='scene'||n.type==='dialogue')?`<div class="scene-next-actions"><button data-action="next-scene" data-id="${idAttr(n.id)}" aria-label="Добавить следующую сцену">${icon('plus',12)}Сцена</button><button data-action="new-choice" data-id="${idAttr(n.id)}" aria-label="Добавить выбор после сцены">${icon('branch',12)}Выбор</button></div>`:'';
   return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}${route}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
     ${start ? '<div class="start-label">'+icon('play',10)+'Начало</div>' : ''}
     ${n.art === 'radio' ? '<div class="node-art" role="img" aria-label="Старый приёмник в лесной сторожке"></div>' : ''}
     <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
     <h3>${escapeHtml(n.title || 'Без названия')}</h3>
-    ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}</div>
+    ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}${next}</div>
     ${exits.length?`<button class="chapter-exit" data-action="other-chapters" data-id="${idAttr(n.id)}" title="Перейти к продолжению в другой главе">${icon('layers',11)}${chapterBadge}${icon('arrow',11)}</button>`:''}
     ${handleMarkup(n)}
   </article>`;
@@ -112,7 +118,7 @@ function renderMap() {
     <div id="link-note" class="link-note" hidden></div>
     ${nodes.length?'<span class="canvas-hint">Нажмите стрелку у узла, чтобы добавить ветку. Потяните, чтобы соединить.</span>':''}
     <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
-    ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся история?</h3><p>Добавьте первую сцену этой главы.</p><button class="btn primary" data-action="add-node">'+icon('plus',16)+'Добавить узел</button></div>' : ''}
+    ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся глава?</h3><div class="first-actions"><button class="btn primary" data-action="first-scene">'+icon('scene',16)+'Написать сцену</button><button class="btn subtle" data-action="new-choice">'+icon('choice',16)+'Начать с выбора</button></div></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
     ${overview.path?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:''}
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
@@ -224,7 +230,7 @@ function selectNode(id,reveal=false) {
     mapPane()?.querySelectorAll('.node-card').forEach(el=>{const active=el.dataset.node===id; el.classList.toggle('selected',active); el.setAttribute('aria-pressed',String(active));});
     renderInspector(); drawMinimap();
   }
-  if (reveal) requestAnimationFrame(()=>revealNode(n));
+  if (reveal) requestAnimationFrame(()=>revealNode(n,true));
 }
 function beginMapDrag(e) {
   const handle=e.target.closest('.node-handle');

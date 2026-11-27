@@ -77,7 +77,7 @@ function timelineBand(band) {
   const {chapter,i,x,width,color,lore}=band;
   const chip=l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
   return `<section class="timeline-band" data-band="${idAttr(chapter.id)}" aria-label="${esc(chapterName(chapter.id))}" style="left:${x}px;width:${width}px;--band-color:${color}">
-    <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3>${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Открыть карту главы ${i+1}" title="Открыть карту главы">${icon('map',16)}</button></div></header>
+    <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3 title="${esc(chapter.title)}">${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Редактировать главу ${i+1}" title="Открыть карту главы">${icon('edit',13)}Редактировать</button></div></header>
     ${overview.showLore && lore.length?`<div class="band-lore" aria-label="Лор главы ${i+1}">${lore.map(chip).join('')}</div>`:''}
     ${band.nodes.length?'':`<button class="empty-band" data-action="timeline-first" data-id="${idAttr(chapter.id)}">${icon('plus',15)}Добавить первую сцену</button>`}
   </section>`;
@@ -87,8 +87,10 @@ function timelineCard(n,point,index,memory,tip) {
   const incoming=index.incoming.get(n.id), label=incoming.length===1?incoming[0].label:'';
   const onPath=memory?.visited.has(n.id);
   const caption=label?`<small title="${esc(label)}">${icon('branch',10)}${esc(label)}</small>`:'';
-  return `<article class="timeline-card${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
-    <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
+  const choice=n.type==='choice';
+  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
+    <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${choice?'':typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
+    ${choice?`<button class="timeline-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" aria-label="${esc('Редактировать варианты «'+n.title+'»')}">${icon('choice',12)}Варианты · ${index.outgoing.get(n.id).length}${icon('edit',10)}</button>`:''}
     <button class="scene-eye" data-action="trace-to" data-id="${idAttr(n.id)}" aria-label="${esc('Показать путь к сцене «'+n.title+'»')}" title="Показать путь к этой сцене">${icon(onPath?'check':'eye',14)}</button></article>`;
 }
 
