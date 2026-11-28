@@ -3,22 +3,48 @@ const NODE_H = { scene:105, choice:109, dialogue:105, ending:105 };
 const narrowMap = window.matchMedia('(max-width:620px)');
 const desktopShape = n => ({w:NODE_W,h:n.art === 'radio' ? 177 : NODE_H[n.type]});
 const shape = n => narrowMap.matches ? {w:220,h:n.art==='radio'?104:76} : desktopShape(n);
-const narrowPositions = new Map(), topPorts = new Set();
+const narrowPositions = new Map(), topPorts = new Set(), narrowLabelOffsets=new Map();
 const pointFor = n => narrowMap.matches ? n.mobile || narrowPositions.get(n.id) || n : n;
+function nodeBounds(n) {
+  const {x,y}=pointFor(n);
+  return {x,y,...shape(n)};
+}
+function edgeCaption(e) {return e.label||(e.rules?.length?'Условие':'');}
+function edgeCaptionMarkup(e) {
+  return '<span>'+escapeHtml(edgeCaption(e))+'</span>'+(e.rules?.length?' '+icon('sliders',12):'');
+}
+function narrowLabelGaps(edges) {
+  const gaps=new Map();
+  if(!edges.length)return gaps;
+  const probe=document.createElement('div');
+  probe.className='label-measure';probe.inert=true;
+  probe.innerHTML=edges.map(e=>`<button class="edge-label">${edgeCaptionMarkup(e)}</button>`).join('');
+  document.body.append(probe);
+  edges.forEach((e,i)=>{
+    const used=gaps.get(e.to)||0, height=probe.children[i].offsetHeight;
+    narrowLabelOffsets.set(e.id,34+used+height/2);
+    gaps.set(e.to,used+height+6);
+  });
+  probe.remove();
+  return gaps;
+}
 function prepareNarrowMap(nodes) {
-  narrowPositions.clear(); topPorts.clear();
+  narrowPositions.clear(); topPorts.clear(); narrowLabelOffsets.clear();
   if(!narrowMap.matches || !nodes.length)return;
   const bySource=new Map(), local=new Map(nodes.map(n=>[n.id,n]));
-  for(const edge of project().edges){if(!local.has(edge.from)||!local.has(edge.to))continue;if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
+  const edges=project().edges.filter(e=>local.has(e.from)&&local.has(e.to));
+  for(const edge of edges){if(!bySource.has(edge.from))bySource.set(edge.from,[]);bySource.get(edge.from).push(edge.to);}
+  const labelGaps=narrowLabelGaps(edges.filter(e=>!local.get(e.to).mobile&&!e.ports?.narrow&&edgeCaption(e)));
   const start=chapterById(nodes[0].chapter).start;
   const stack=[...nodes.map(n=>({id:n.id,depth:0,top:true})).reverse(),{id:start,depth:0,top:true}];
   let y=0;
   while(stack.length){
     const {id,depth,top}=stack.pop(), n=local.get(id);
     if(!n||narrowPositions.has(id))continue;
+    if(narrowPositions.size)y+=labelGaps.has(id)?68+labelGaps.get(id):33;
     narrowPositions.set(id,{x:depth*48,y});
     if(top)topPorts.add(id);
-    y+=shape(n).h+33;
+    y+=shape(n).h;
     const children=bySource.get(id)||[], fork=children.length>1;
     for(let i=children.length-1;i>=0;i--)stack.push({id:children[i],depth:Math.min(2,depth+Number(fork)),top:!fork});
   }
@@ -29,6 +55,7 @@ const mapPane = () => document.getElementById('map-pane');
 const stage = () => document.getElementById('world');
 const boxFor = n => document.getElementById('card-' + n.id);
 let dragging = null, mapResize = null, lastPaneSize = null, spaceDown = false;
+let edgeLabelBoxes = [], edgeLabelScale=1;
 function iconButton(action, glyph, label, extra = '') {
   return `<button type="button" class="icon-button" data-action="${action}" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}" ${extra}>${icon(glyph,17)}</button>`;
 }
@@ -38,15 +65,25 @@ function typeTag(type) {
 }
 function graphBounds(nodes = chapterNodes()) {
   if (!nodes.length) return { x:0, y:0, w:500, h:320 };
-  const x = Math.min(...nodes.map(n => pointFor(n).x)), y = Math.min(...nodes.map(n => pointFor(n).y));
-  return { x,y,w:Math.max(...nodes.map(n => pointFor(n).x + shape(n).w)) - x,h:Math.max(...nodes.map(n => pointFor(n).y + shape(n).h)) - y };
+  const ids=new Set(nodes.map(n=>n.id));
+  const boxes=nodes.map(nodeBounds).concat(edgeLabelBoxes.filter(b=>ids.has(b.from)&&ids.has(b.to)));
+  const x=Math.min(...boxes.map(b=>b.x)), y=Math.min(...boxes.map(b=>b.y));
+  return {x,y,w:Math.max(...boxes.map(b=>b.x+b.w))-x,h:Math.max(...boxes.map(b=>b.y+b.h))-y};
 }
 function fitGraph(initial = false,nodes = chapterNodes()) {
   const pane = mapPane(); if (!pane) return;
-  const b = graphBounds(nodes), w = pane.clientWidth, h = pane.clientHeight;
+  const w = pane.clientWidth, h = pane.clientHeight;
   const top = narrowMap.matches ? 60 : 39, bottom = narrowMap.matches ? 43 : 50, side = w > 660 ? 36 : 18;
-  camera.scale = Math.max(.2,Math.min(initial ? 1.08 : 1.22,(w-side*2)/b.w,(h-top-bottom)/b.h));
-  if(initial && narrowMap.matches)camera.scale=Math.max(.88,camera.scale);
+  const minScale = initial && narrowMap.matches ? .88 : .2;
+  const fit = b => Math.max(minScale, Math.min(initial ? 1.08 : 1.22, (w-side*2)/b.w, (h-top-bottom)/b.h));
+  let b=graphBounds(nodes);
+  camera.scale=fit(b);
+  // A different zoom changes the room beside each fixed-size connection handle.
+  for(let pass=0;pass<4&&edgeLabelBoxes.length&&edgeLabelScale!==camera.scale;pass++){
+    drawEdges();
+    b=graphBounds(nodes);
+    if(pass<3)camera.scale=Math.min(camera.scale,fit(b));
+  }
   camera.x = (w - b.w * camera.scale)/2 - b.x*camera.scale;
   camera.y = top + Math.max(0,(h-top-bottom-b.h*camera.scale)/2) - b.y*camera.scale;
   applyCamera();
@@ -58,6 +95,7 @@ function applyCamera() {
   const dotSpace = 22 * camera.scale;
   pane.style.backgroundSize = `${dotSpace}px ${dotSpace}px`;
   pane.style.setProperty('--handle-inverse',1/camera.scale);
+  if(edgeLabelBoxes.length&&edgeLabelScale!==camera.scale)drawEdges();
   const zoom = document.getElementById('zoom-value');
   if (zoom) zoom.textContent = Math.round(camera.scale * 100) + '%';
   drawMinimap();
@@ -153,12 +191,14 @@ function wire(n1,n2,edge) {
   const a=shape(n1), b=shape(n2);
   if(narrowMap.matches) {
     const from=pointFor(n1),to=pointFor(n2),x=from.x+22,y=from.y+a.h;
+    const offset=to.y>=y?narrowLabelOffsets.get(edge?.id):null;
     if(topPorts.has(n2.id)){
       const tx=to.x+22,ty=to.y,mid=(y+ty)/2;
-      return {d:`M ${x} ${y} C ${x} ${mid}, ${tx} ${mid}, ${tx} ${ty}`,labelX:(x+tx)/2+45,labelY:mid};
+      return {d:`M ${x} ${y} C ${x} ${mid}, ${tx} ${mid}, ${tx} ${ty}`,labelX:offset?to.x+b.w/2:(x+tx)/2+45,labelY:offset?to.y-offset:mid,anchorX:(x+tx)/2,anchorY:mid};
     }
     const tx=to.x,ty=to.y+b.h/2,turn=ty>=y?8:-8,side=tx>=x?8:-8;
-    return {d:`M ${x} ${y} V ${ty-turn} Q ${x} ${ty} ${x+side} ${ty} H ${tx}`,labelX:tx+48,labelY:to.y-12};
+    const labelY=to.y-(offset||12), anchorY=Math.max(Math.min(y,ty-turn),Math.min(labelY,Math.max(y,ty-turn)));
+    return {d:`M ${x} ${y} V ${ty-turn} Q ${x} ${ty} ${x+side} ${ty} H ${tx}`,labelX:tx+(offset?b.w/2:48),labelY,anchorX:x,anchorY};
   }
   const x1=n1.x+a.w, y1=n1.y+a.h/2, x2=n2.x, y2=n2.y+b.h/2;
   if (x2-x1 < 30) {
@@ -168,19 +208,89 @@ function wire(n1,n2,edge) {
   const dx=x2-x1, bend=dx*.54;
   return { d:`M ${x1} ${y1} C ${x1+bend} ${y1}, ${x2-bend} ${y2}, ${x2} ${y2}`, labelX:(x1+x2)/2, labelY:(y1+y2)/2 };
 }
+
+// If a badge touches a card or another badge, find the closest free position
+// along either axis. Coordinates and measurements stay in unscaled map units.
+function nearestFreeCoordinate(value,spans) {
+  spans.sort((a,b)=>a[0]-b[0]);
+  for(let i=0;i<spans.length;){
+    const start=spans[i][0];
+    let end=spans[i++][1];
+    while(i<spans.length&&spans[i][0]<end)end=Math.max(end,spans[i++][1]);
+    if(start<value&&value<end)return value-start<=end-value?start:end;
+  }
+  return value;
+}
+function placeEdgeLabels(anchors,buttons,cards,grip) {
+  edgeLabelScale=camera.scale;
+  if(!anchors.length){edgeLabelBoxes=[];return '';}
+  const sizes=Array.from(buttons,b=>({w:b.offsetWidth,h:b.offsetHeight}));
+  const leaders=[];
+  const occupied=[...cards];
+  for(const b of cards){
+    const midX=b.x+b.w/2, midY=b.y+b.h/2;
+    for(const [x,y] of [[b.x-grip-1,midY-grip/2],[b.x+b.w+1,midY-grip/2],[midX-grip/2,b.y-grip-1],[midX-grip/2,b.y+b.h+1]]){
+      occupied.push({x,y,w:grip,h:grip});
+    }
+  }
+  edgeLabelBoxes=anchors.map(({x,y,wireX,wireY,edge,color},i)=>{
+    const {w,h}=sizes[i], halfW=w/2+4, halfH=h/2+4;
+    const across=[], down=[];
+    let blocked=false;
+    for(const box of occupied){
+      const left=box.x-halfW, right=box.x+box.w+halfW, top=box.y-halfH, bottom=box.y+box.h+halfH;
+      const inX=left<x&&x<right, inY=top<y&&y<bottom;
+      if(inX&&inY)blocked=true;
+      if(inX)down.push([top,bottom]);
+      if(inY)across.push([left,right]);
+    }
+    let cx=x,cy=y;
+    if(blocked){
+      const freeX=nearestFreeCoordinate(x,across), freeY=nearestFreeCoordinate(y,down);
+      if(Math.abs(freeX-x)<Math.abs(freeY-y))cx=freeX;else cy=freeY;
+      buttons[i].style.left=cx+'px';buttons[i].style.top=cy+'px';
+    }
+    if(Math.abs(wireX-cx)>w/2||Math.abs(wireY-cy)>h/2)
+      leaders.push(`<path class="label-leader" d="M ${wireX} ${wireY} L ${cx} ${cy}" stroke="${color}"/>`);
+    const box={x:cx-w/2,y:cy-h/2,w,h,from:edge.from,to:edge.to};
+    occupied.push(box);
+    return box;
+  });
+  return leaders.join('');
+}
+
 function drawEdges() {
   const layer=document.getElementById('edges'), labelLayer=document.getElementById('edge-labels'); if (!layer) return;
+  const focusedId=labelLayer.contains(document.activeElement)?document.activeElement.dataset.id:null;
+  // Connection handles have a fixed screen size as the map zooms.
+  const grip=25/camera.scale+2;
   const markers=Object.entries(NODE_TYPES).map(([type,t])=>`<marker id="tip-${type}" viewBox="0 0 8 8" refX="7.6" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 L2 4Z" fill="${t.color}"/></marker>`).join('');
   const routeTip='<marker id="tip-route" viewBox="0 0 8 8" refX="7.6" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 0 L8 4 L0 8 L2 4Z" fill="#97e4c5"/></marker>';
-  const paths=[`<defs>${markers}${routeTip}</defs>`], labels=[];
+  const boxes=new Map(chapterNodes().map(n=>[n.id,nodeBounds(n)]));
+  const paths=[`<defs>${markers}${routeTip}</defs>`], labels=[], anchors=[];
   for (const e of chapterEdges()) {
     const a=nodeById(e.from), b=nodeById(e.to), g=wire(a,b,e);
     const onPath=overview.memory?.chosen.has(e.id), faded=overview.memory&&!onPath;
     const type=a.type==='choice'?b.type:a.type, color=onPath?'#97e4c5':NODE_TYPES[type].color;
-    paths.push(`<path class="wire-line" d="${g.d}" stroke="${color}" stroke-width="${onPath?3:1.7}" fill="none" opacity="${faded?.3:.9}" ${faded?'stroke-dasharray="5 3"':''} marker-end="url(#tip-${onPath?'route':type})"/><path class="wire-hit" d="${g.d}" data-action="edit-edge" data-id="${idAttr(e.id)}"><title>Изменить подпись и условия перехода</title></path>`);
-    if (e.label||e.rules?.length) labels.push(`<button class="edge-label${faded?' chapter-off-path':''}" style="left:${g.labelX}px;top:${g.labelY}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="Изменить подпись и условия перехода">${e.rules?.length?icon('sliders',11):''}${escapeHtml(e.label||'Условие')}</button>`);
+    const conditional=!!e.rules?.length, caption=edgeCaption(e);
+    const hint=escapeHtml((e.label||'Переход к «'+b.title+'»')+'\nИзменить подпись и условия перехода');
+    paths.push(`<path class="wire-line" d="${g.d}" stroke="${color}" stroke-width="${onPath?3:1.7}" fill="none" opacity="${faded?.3:.9}" ${faded?'stroke-dasharray="5 3"':''} marker-end="url(#tip-${onPath?'route':type})"/><path class="wire-hit" d="${g.d}" data-action="edit-edge" data-id="${idAttr(e.id)}"><title>${hint}</title></path>`);
+    if(!caption)continue;
+    const start=boxes.get(a.id), end=boxes.get(b.id);
+    const left=Math.min(start.x+start.w,end.x+end.w), right=Math.max(start.x,end.x);
+    const room=2*Math.min(g.labelX-left,right-g.labelX)-10;
+    const besideCard=[start,end].some(box=>g.labelY>=box.y-10&&g.labelY<=box.y+box.h+10);
+    const besideGrip=[start,end].some(box=>Math.abs(g.labelY-box.y-box.h/2)<grip/2+4);
+    const betweenGrips=room-2*(grip+1);
+    const available=besideGrip&&betweenGrips>=78?betweenGrips:room;
+    const width=!narrowMap.matches&&besideCard&&available>=78?Math.min(220,available):220;
+    anchors.push({x:g.labelX,y:g.labelY,wireX:g.anchorX??g.labelX,wireY:g.anchorY??g.labelY,edge:e,color});
+    labels.push(`<button type="button" class="edge-label${faded?' chapter-off-path':''}" style="left:${g.labelX}px;top:${g.labelY}px;--label-width:${width}px;--node-color:${color}" data-action="edit-edge" data-id="${idAttr(e.id)}" title="${hint}" aria-label="${escapeHtml(caption+'. Изменить переход'+(conditional?' с условиями':''))}">${edgeCaptionMarkup(e)}</button>`);
   }
-  layer.innerHTML=paths.join(''); labelLayer.innerHTML=labels.join('');
+  labelLayer.innerHTML=labels.join('');
+  const leaders=placeEdgeLabels(anchors,labelLayer.children,[...boxes.values()],grip);
+  layer.innerHTML=paths.join('')+leaders;
+  if(focusedId)[...labelLayer.children].find(button=>button.dataset.id===focusedId)?.focus({preventScroll:true});
 }
 let miniView=null;
 function drawMinimap() {

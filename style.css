@@ -116,9 +116,11 @@ button {transition:background-color .14s,color .14s,border-color .14s}
 .port::before {content:"";position:absolute;inset:-7px}
 .port.in {left:0}.port.out {left:100%}
 .port:hover {background:var(--node-color);box-shadow:0 0 0 4px #c6b4fc2b}
-.edge-label {position:absolute;transform:translate(-50%,-50%);max-width:110px;padding:4px 8px;color:color-mix(in srgb,var(--node-color) 88%,white);font-size:10px;font-weight:540;letter-spacing:.03px;line-height:1.2;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;background:color-mix(in srgb,var(--node-color) 9%,#18191e);border:1px solid color-mix(in srgb,var(--node-color) 23%,#26262c);border-radius:5px}
-.edge-label:hover {border-color:var(--node-color)}
-.edge-label .icon {margin-right:4px}
+.label-measure {position:fixed;visibility:hidden;pointer-events:none;width:0;height:0;overflow:hidden}
+.edge-label {position:absolute;transform:translate(-50%,-50%);display:block;width:max-content;max-width:var(--label-width,220px);padding:4px 6px;color:#f6eff3;font-size:13px;font-weight:600;line-height:1.32;white-space:normal;overflow-wrap:anywhere;text-align:center;background:color-mix(in srgb,var(--node-color) 10%,#1d1e24);border:1px solid color-mix(in srgb,var(--node-color) 42%,#35343c);border-radius:5px;--off-path-opacity:.74}
+.edge-label .icon {color:var(--node-color);vertical-align:-1px}
+.edge-label:hover,.edge-label:focus-visible {z-index:3;border-color:var(--node-color);background:color-mix(in srgb,var(--node-color) 18%,#1d1e24)}
+.label-leader {fill:none;stroke-width:1;stroke-dasharray:3 3;opacity:.65;pointer-events:none}
 .wire-hit {stroke:transparent;stroke-width:14;fill:none;pointer-events:stroke;cursor:pointer}
 .wire-line {pointer-events:none}
 .ghost-layer {z-index:4}
@@ -529,7 +531,7 @@ kbd {font:11px var(--mono);color:#dfd8ed;background:#33313b;border:1px solid #49
   .scene-next-actions {margin-top:1px}.scene-next-actions button {padding:2px 5px}
 }
 .map-pane .chapter-on-path {border-color:#8bd6b8;box-shadow:0 0 0 1px #8bd6b8}
-.map-pane .chapter-off-path:not(:hover):not(:focus-within):not(.selected) {opacity:.48}
+.map-pane .chapter-off-path:not(:hover):not(:focus-within):not(.selected) {opacity:var(--off-path-opacity,.48)}
 .chapter-route-note {position:absolute;z-index:2;left:20px;bottom:57px;display:flex;align-items:center;gap:1px;padding:2px 4px;border-color:#4f705f;background:#25362e}
 .chapter-route-note>button {display:inline-flex;gap:5px;align-items:center;color:#bceacf;font-size:11px}
 .chapter-route-note>.icon-button {width:23px;height:23px}
