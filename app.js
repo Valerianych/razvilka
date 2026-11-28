@@ -41,7 +41,10 @@ function renderAll(fit=false) {
   const allChapters=ui.page==='timeline', diagram=allChapters||ui.page==='map';
   const story=allChapters||overview.path?storyIndex(p):null;
   if(overview.path)overview.path=validStoryPath(p,story,overview.path);
-  overview.memory=overview.path?readingMemory(p,overview.path):null;
+  overview.occurrences=loreOccurrences(p);
+  if(!overview.occurrences.byLore.has(overview.loreId)){overview.loreId=null;overview.loreScene=null;}
+  overview.loreMatches=new Set((overview.occurrences.byLore.get(overview.loreId)||[]).map(n=>n.id));
+  overview.memory=overview.path&&!overview.loreId?readingMemory(p,overview.path):null;
   if(diagram)lastDiagram=ui.page;
   if (!chapterById(ui.chapter)) ui.chapter=p.chapters[0].id;
   if (!nodeById(ui.selected) || nodeById(ui.selected).chapter!==ui.chapter) ui.selected=chapterById(ui.chapter).start || chapterNodes()[0]?.id || null;
@@ -57,8 +60,9 @@ function renderAll(fit=false) {
   const chapter=chapterById(ui.chapter), mainAction={map:['add-node','Добавить узел'],lore:['add-lore','Добавить запись'],dialogues:['add-line','Добавить реплику']}[navPage];
   const chapterNum=p.chapters.findIndex(c=>c.id===chapter.id)+1;
   const scope=diagram?`<div class="map-scope" role="group" aria-label="Вид карты"><button data-action="all-chapters" class="${allChapters?'current':''}" aria-pressed="${allChapters}">${icon('timeline',15)}Все главы</button><button data-action="chapters" class="chapter-switch ${allChapters?'':'current'}" aria-haspopup="true">${icon('layers',15)}<span>${allChapters?'По главам':'Глава '+chapterNum+'<span class="chapter-name"> · '+esc(chapter.title)+'</span>'}</span>${icon('chevron-down',12)}</button></div>`:'';
-  const focusLabel=overview.path?'Снять выделение':'Выделить ветку';
-  const actions=allChapters?`<button class="timeline-lore-toggle" data-action="timeline-lore" aria-pressed="${overview.showLore}" aria-label="Показывать лор глав" title="Показывать лор глав">${icon('book',16)}<span>Лор</span></button><button data-action="trace-toggle" class="btn route-toggle ${overview.path?'enabled':''}" aria-pressed="${!!overview.path}" ${p.nodes.length?'':'disabled'}>${icon('eye',17)}${focusLabel}</button>`:`<div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)')}${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button>`;
+  const focusLabel=overview.memory?'Снять выделение':overview.path?'К выделенной ветке':'Выделить ветку';
+  const compactFocus=overview.memory?'Снять':overview.path?'К ветке':'Ветка';
+  const actions=allChapters?`<button class="timeline-lore-toggle" data-action="timeline-lore" aria-pressed="${overview.showLore}" aria-label="Показывать лор глав" title="Показывать лор глав">${icon('book',16)}<span>Лор</span></button><button data-action="trace-toggle" class="btn route-toggle ${overview.memory?'enabled':''}" aria-label="${focusLabel}" title="${focusLabel}" aria-pressed="${!!overview.memory}" ${p.nodes.length?'':'disabled'}>${icon('eye',17)}<span class="route-label">${focusLabel}</span><span class="route-label-compact">${compactFocus}</span></button>`:`<div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)')}${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button>`;
   byId('workbar').classList.toggle('diagram-bar',diagram);
   byId('workbar').innerHTML=`<div class="view-context"><h2>${views[navPage][0]}</h2>${scope}</div><div class="work-actions">${actions}</div>`;
   if (allChapters) { mapResize?.disconnect(); renderTimeline(story); }
@@ -72,7 +76,16 @@ function renderStatus() {
   const count=diagram ? nodeCount(here.size)+'<span class="status-dot">·</span>'+edgeCount(all?project().edges.length:project().edges.filter(e=>here.has(e.from)).length)
     : ui.page==='lore' ? countWords(project().lore.length,['запись','записи','записей']) : lineCount(project().nodes.reduce((n,v)=>n+v.lines.length,0));
   const legend=diagram ? Object.entries(NODE_TYPES).map(([key,t])=>`<span class="legend-item"><i class="legend-swatch swatch-${key}" style="--node-color:${t.color}"></i>${t.name}</span>`).join('') : '';
-  byId('statusbar').innerHTML=`<div class="status-count">${icon(diagram?'map':views[ui.page][1],14)}${count}</div><div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
+  const pending=diagram?unfinishedScenes(project()).length:0;
+  const openEnds=diagram?`<button class="unfinished-button" data-action="unfinished" title="Сцены без исходящих переходов во всех главах">${icon('edit',13)}Без продолжения <b>${pending}</b></button>`:'';
+  byId('statusbar').innerHTML=`<div class="status-count">${icon(diagram?'map':views[ui.page][1],14)}${count}</div>${openEnds}<div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
+}
+function openUnfinishedScenes() {
+  const p=project(), pending=unfinishedScenes(p), groups=new Map();
+  for(const n of pending){if(!groups.has(n.chapter))groups.set(n.chapter,[]);groups.get(n.chapter).push(n);}
+  const list=p.chapters.filter(c=>groups.has(c.id)).map(c=>`<section><h3>${esc(chapterName(c.id))}</h3>${groups.get(c.id).map(n=>`<button data-action="jump" data-id="${idAttr(n.id)}">${typeTag(n.type)}<strong>${esc(n.title)}</strong>${icon('chevron-right',15)}</button>`).join('')}</section>`).join('');
+  const msg=p.nodes.length?'У каждой сцены есть продолжение или отметка «Финал».':'Здесь появятся сцены, которым нужно продолжение.';
+  modal('Без продолжения',`<div class="modal-body unfinished-list">${list||'<p>'+msg+'</p>'}</div>`);
 }
 function loreChip(item) { return `<span class="lore-chip kind-${item.kind}">${icon(LORE_KINDS[item.kind].icon,12)}${esc(item.title)}</span>`; }
 function renderInspector() {
@@ -90,6 +103,7 @@ function renderInspector() {
   panel.innerHTML=`<div class="inspector-head"><span>${icon('panel',16)}Детали узла</span>${iconButton('hide-inspector','x','Закрыть детали узла')}</div>
     <div class="inspector-scroll"><div class="inspector-id"><button class="type-edit" data-action="node-type" title="Изменить тип узла">${typeTag(n.type)}${icon('chevron-down',12)}</button><span class="inspector-ident"><span class="inspector-no">УЗЕЛ #${pad(n.no)}</span>${iconButton('toggle-important','spark',n.important?'Снять отметку «Ключевой момент»':'Отметить ключевой момент',`aria-pressed="${!!n.important}"`)}</span></div>
     <label class="field"><span>Название</span><input data-edit="title" data-id="${idAttr(n.id)}" value="${esc(n.title)}" maxlength="240" placeholder="Название узла"></label>
+    <button class="inspect-preview" data-action="preview-scene" data-id="${idAttr(n.id)}">${icon('play',14)}Проверить отсюда</button>
     ${n.type!=='ending'?`<button class="writer-from-scene" data-action="${n.type==='choice'?'edit-choice':'new-choice'}" data-id="${idAttr(n.id)}">${icon('branch',15)}${n.type==='choice'?'Редактировать варианты':'Добавить выбор после сцены'}</button>`:''}
     <label class="field"><span>Описание</span><textarea data-edit="description" data-id="${idAttr(n.id)}" rows="4" placeholder="Что происходит в этой точке истории?">${esc(n.description)}</textarea></label>
     <section class="inspector-section"><div class="section-line"><h3>${icon('book',15)}Связанный лор</h3>${iconButton('attach-lore','plus','Привязать запись лора')}</div>
@@ -115,7 +129,7 @@ function drawCollectionContent() {
   if (ui.page==='lore') {
     const items=project().lore.filter(l=>(ui.kind==='all'||l.kind===ui.kind)&&match(l.title,l.description));
     host.className='lore-grid'; host.innerHTML=items.map(l=>{
-      const used=project().nodes.filter(n=>n.lore.includes(l.id)).length;
+      const used=overview.occurrences.byLore.get(l.id).length;
       return `<button class="lore-card kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}"><div class="lore-card-top"><span class="lore-icon">${icon(LORE_KINDS[l.kind].icon,21)}</span><span>${LORE_KINDS[l.kind].name}</span>${icon('edit',14)}</div><h3>${esc(l.title)}</h3><p>${esc(l.description)}</p><div class="card-foot">${icon('link',13)}${nodeCount(used)}</div></button>`;
     }).join('');
     if (!items.length) host.innerHTML=emptyCollection(q||ui.kind!=='all'?'Записи не найдены':'Здесь будет лор истории',q||ui.kind!=='all'?'Измените условия поиска.':'Добавьте персонажа, место, предмет или событие.','book');
@@ -133,7 +147,7 @@ function rememberPlace() {
   const pane=mapPane(), w=pane?.clientWidth||lastPaneSize?.w, h=pane?.clientHeight||lastPaneSize?.h;
   const map=w&&h?{x:(w/2-camera.x)/camera.scale,y:(h/2-camera.y)/camera.scale,scale:camera.scale}:null;
   const place={diagram:lastDiagram,chapter:ui.chapter,selected:ui.selected,map,inspector:ui.inspector,
-    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path};
+    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path,loreId:overview.loreId,loreScene:overview.loreScene};
   try {sessionStorage.setItem(placeKey(),JSON.stringify(place));} catch { /* The editor also works without tab storage. */ }
 }
 function resumePlace() {
@@ -149,6 +163,7 @@ function resumePlace() {
   if(Number.isFinite(place.left))overview.left=place.left;
   if(Number.isFinite(place.top))overview.top=place.top;
   if(typeof place.lore==='boolean')overview.showLore=place.lore;
+  if(project().lore.some(l=>l.id===place.loreId)){overview.loreId=place.loreId;overview.loreScene=place.loreScene;}
   if(Array.isArray(place.path)&&place.path.every(s=>typeof s?.node==='string'&&(s.via===null||typeof s.via==='string')))overview.path=place.path;
   const m=place.map, restore=ui.page==='map'&&m&&Number.isFinite(m.x)&&Number.isFinite(m.y)&&m.scale>=.17&&m.scale<=2.3;
   renderAll(!restore);
@@ -203,9 +218,10 @@ function openEdgeForm(source=ui.selected,target='',edge=null) {
 }
 function openLoreForm(id=null,attachTo=null) {
   const item=project().lore.find(l=>l.id===id)||{title:'',description:'',kind:'person'};
-  const used=project().nodes.filter(n=>n.lore.includes(id));
-  modal(id?'Запись лора':'Новая запись лора',`<form id="lore-form"><div class="modal-body"><label class="field"><span>Категория</span><select name="kind">${Object.entries(LORE_KINDS).map(([k,v])=>`<option value="${k}" ${item.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label><label class="field"><span>Название</span><input data-first required maxlength="200" name="title" value="${esc(item.title)}" placeholder="Имя или название"></label><label class="field"><span>Описание</span><textarea rows="5" name="description" placeholder="Какие детали важны для истории?">${esc(item.description)}</textarea></label>
-    ${used.length?'<div class="field"><span>На карте сюжета</span><div class="chips">'+used.map(n=>`<button type="button" class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon(NODE_TYPES[n.type].icon,13)}${esc(n.title)}</button>`).join('')+'</div></div>':''}${id?'<button type="submit" class="text-action" name="next" value="scene">'+icon('plus',14)+'Создать сцену с этой записью</button>':''}</div>${formFooter(id?'Сохранить':'Добавить запись',id?iconButton('delete-lore','trash','Удалить запись',`data-id="${idAttr(id)}"`):'')}</form>`);
+  const used=overview.occurrences.byLore.get(id)||[];
+  const appearances=id?`<button class="lore-show-map kind-${item.kind}" type="submit" name="next" value="appearances">${icon('map',16)}Где появляется <span>${sceneCount(used.length)}</span></button>`:'';
+  modal(id?'Запись лора':'Новая запись лора',`<form id="lore-form"><button type="submit" hidden></button><div class="modal-body"><label class="field"><span>Категория</span><select name="kind">${Object.entries(LORE_KINDS).map(([k,v])=>`<option value="${k}" ${item.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label><label class="field"><span>Название</span><input data-first required maxlength="200" name="title" value="${esc(item.title)}" placeholder="Имя или название"></label>${appearances}<label class="field"><span>Описание</span><textarea rows="5" name="description" placeholder="Какие детали важны для истории?">${esc(item.description)}</textarea></label>
+    ${used.length?'<details class="lore-scenes"><summary>Сцены по главам</summary><div class="chips">'+used.map(n=>`<button type="button" class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${esc(chapterName(n.chapter)+' · '+n.title)}</button>`).join('')+'</div></details>':''}${id?'<button type="submit" class="text-action" name="next" value="scene">'+icon('plus',14)+'Создать сцену с этой записью</button>':''}</div>${formFooter(id?'Сохранить':'Добавить запись',id?iconButton('delete-lore','trash','Удалить запись',`data-id="${idAttr(id)}"`):'')}</form>`);
   modalContext={id,attachTo};
 }
 function openLorePicker() {
@@ -269,6 +285,8 @@ function handleAction(action,button,e) {
     case 'all-chapters': goPage('timeline');break;
     case 'timeline-lore': overview.showLore=!overview.showLore;renderAll();break;
     case 'loose-lore': openLooseLore();break;
+    case 'clear-lore-focus': clearLoreFocus();break;
+    case 'unfinished': openUnfinishedScenes();break;
     case 'timeline-first': case 'first-scene':
       if(action==='timeline-first')setChapter(id);
       pendingInsert={chapter:ui.chapter,side:'right'};addFromPalette('scene');break;
@@ -308,9 +326,16 @@ function handleAction(action,button,e) {
     case 'export': downloadProject();break;
     case 'import': byId('import-file').click();break;
     case 'play': startReading();break;
+    case 'preview-scene': previewScene(id);break;
+    case 'preview-isolated': if(nodeById(id))beginReading([{node:id,via:null}],{id,source:'isolated'});break;
+    case 'preview-path': choosePreviewHistory(Number(button.dataset.index));break;
+    case 'preview-map': {
+      const path=playSession?.entry;
+      closeModal();if(path)showTimelinePath(path);else goPage('timeline');break;
+    }
     case 'read-next': followEdge(id);break;
-    case 'read-back': if(playSession.path.length>1)playSession.path.pop();renderReading();break;
-    case 'read-restart': playSession.path=[{node:playSession.start,via:null}];renderReading();break;
+    case 'read-back': if(playSession&&playSession.path.length>playSession.entry.length){playSession.path.pop();renderReading();}break;
+    case 'read-restart': if(playSession){playSession.path=playSession.entry.slice();renderReading();}break;
     case 'chapters': showMenu(button,project().chapters.map((c,i)=>menuItem('chapter','layers',`Глава ${i+1} · ${c.title}`,`data-id="${idAttr(c.id)}"`,ui.page==='map'&&ui.chapter===c.id?icon('check',14):'')).join('')+'<hr>'+menuItem('add-chapter','plus','Добавить главу')+(ui.page==='map'?menuItem('rename-chapter','edit','Переименовать главу'):''));break;
     case 'chapter': setChapter(id);break;
     case 'add-chapter': openChapterForm(true);break;
@@ -382,7 +407,7 @@ document.addEventListener('pointerdown',e=>{
   if(!menu.hidden&&!menu.contains(e.target)&&!e.target.closest('[aria-haspopup],.type-edit,[data-action="node-options"]'))dismissMenu();
 });
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeModal();});
-dialog.addEventListener('close',()=>{playSession=null;if(refreshAfterWriting&&!dialog.open){refreshAfterWriting=false;renderAll();}});
+dialog.addEventListener('close',()=>{if(dialog.open)return;playSession=null;if(refreshAfterWriting){refreshAfterWriting=false;renderAll();}});
 byId('import-file').addEventListener('change',e=>importProject(e.target.files[0]));
 document.addEventListener('change',e=>{
   if(e.target.matches('.outcome-mode')){
@@ -390,6 +415,7 @@ document.addEventListener('change',e=>{
     if(e.target.value==='existing')row.querySelector('.writer-search input')?.focus();
   }
   if(e.target.id==='timeline-chapter')scrollToTimelineChapter(e.target.value);
+  if(e.target.id==='appearance-scene')selectAppearance(e.target.value);
   if(e.target.matches('.rule-test')) {
     const kind=e.target.value.split('-')[0], ref=e.target.closest('.rule-row').querySelector('.rule-ref');
     const previous=ref.value;
@@ -460,9 +486,15 @@ dialog.addEventListener('submit',e=>{
       if(inserted){revealNode(inserted);renameOnCard(inserted);}else toast('Переход сохранён');break;
     }
     case 'lore-form': {
-      const item={id:ctx.id||uid(),kind:value('kind'),title:value('title'),description:value('description')};
-      changeProject(p=>{if(ctx.id)Object.assign(p.lore.find(l=>l.id===ctx.id),item);else p.lore.push(item);if(ctx.attachTo){const owner=nodeById(ctx.attachTo);owner.lore=[...new Set([...(ctx.pending||owner.lore),item.id])];}});
-      closeModal();renderAll();
+      const previous=project().lore.find(l=>l.id===ctx.id);
+      const text=k=>previous&&form.elements[k].value===form.elements[k].defaultValue?previous[k]:value(k);
+      const item={id:ctx.id||uid(),kind:value('kind'),title:text('title'),description:text('description')};
+      if(!previous||ctx.attachTo||['kind','title','description'].some(k=>previous[k]!==item[k])){
+        changeProject(p=>{if(previous)Object.assign(previous,item);else p.lore.push(item);if(ctx.attachTo){const owner=nodeById(ctx.attachTo);owner.lore=[...new Set([...(ctx.pending||owner.lore),item.id])];}});
+      }
+      closeModal();
+      if(e.submitter?.value==='appearances'){showLoreOnMap(item.id);break;}
+      renderAll();
       if(e.submitter?.value==='scene'){if(ctx.chapterForScene)ui.chapter=ctx.chapterForScene;openNodeForm(null);modalContext.loreId=item.id;}else toast('Запись сохранена');break;
     }
     case 'attach-form': changeProject(()=>{nodeById(ui.selected).lore=data.getAll('lore');});closeModal();renderAll();break;

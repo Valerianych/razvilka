@@ -564,6 +564,72 @@ kbd {font:11px var(--mono);color:#dfd8ed;background:#33313b;border:1px solid #49
   .map-scope>button>.icon:first-child {display:none}
   .route-toggle {padding:6px 7px}.timeline-lore-toggle {padding:4px}
 }
+.scene-preview {position:absolute;right:31px;top:3px;display:grid;place-items:center;width:25px;height:24px;border-radius:4px;padding:0;color:#adc9bc}
+.scene-preview:hover,.scene-preview:focus-visible {background:#385544;color:#dcffec}
+.timeline-variants {max-width:96px;white-space:nowrap}
+.route-preview,.inspect-preview {display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#c8eeda;background:#2a3a32;border:1px solid #4b6758;border-radius:5px;font-size:12px}
+.route-preview {padding:7px 9px;white-space:nowrap;margin-left:auto;flex-shrink:0}
+.route-preview+.route-back {margin-left:0}
+.inspect-preview {width:100%;padding:8px 9px;margin:0 0 9px}
+.route-preview:hover,.inspect-preview:hover {background:#3a5043}
+.preview-history {border-block:1px solid #40574b;background:#26332c}
+.preview-history summary {list-style:none;display:flex;align-items:center;gap:9px;padding:11px 19px;color:#a7d4b9;cursor:pointer}
+.preview-history summary::-webkit-details-marker {display:none}
+.preview-history summary>span:first-of-type,.preview-paths button>span {display:grid;min-width:0;gap:3px}
+.preview-history small,.preview-history strong {overflow-wrap:anywhere}
+.preview-history small {font-size:11px;font-weight:450;color:#b3cabb}
+.preview-history strong {font-size:13px;font-weight:600;color:#edf3ed}
+.switch-history {margin-left:auto;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-size:11.5px}
+.preview-history[open] .switch-history svg {transform:rotate(180deg)}
+.preview-paths {display:grid;gap:4px;padding:0 14px 10px;max-height:34dvh;overflow:auto}
+.preview-paths button {display:flex;align-items:center;gap:9px;text-align:left;color:#b7cabc;padding:7px 9px;border:1px solid transparent;border-radius:5px}
+.preview-paths button:hover,.preview-paths button[aria-pressed="true"] {background:#32453a;border-color:#536f5c}
+.reader-modal:has(.preview-history) .reader-image {height:64px}
+.preview-target {margin:0 0 8px;font-size:19px}
+.unfinished-button {display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;white-space:nowrap;color:#d4bea4}
+.unfinished-button:hover {color:#f6e6cd;background:#37302b}
+.unfinished-button b {font-size:10px;background:#36312c;border-radius:4px;padding:1px 5px}
+.unfinished-list h3 {font-size:12px;color:#cdc1d7;margin:0 0 5px}
+.unfinished-list section+section {margin-top:16px}
+.unfinished-list button {display:flex;align-items:center;gap:10px;width:100%;padding:9px 4px;text-align:left;border-bottom:1px solid #403b46}
+.unfinished-list button:hover {background:#322d38}
+.unfinished-list strong {font-size:13px;font-weight:550;overflow-wrap:anywhere;min-width:0}
+.unfinished-list button>svg:last-child {margin-left:auto;color:#aea4b7}
+.unfinished-list p,.lore-scenes {font-size:13px;color:#c8c0cd}
+.pending-mark {display:inline-flex;color:#d4b081}
+.timeline-card.unfinished-scene {border-bottom-style:dashed}
+.lore-show-map {display:flex;align-items:center;gap:8px;width:100%;margin:0 0 15px;padding:10px 12px;background:#302b37;color:var(--kind-color);border:1px solid #514559;border-radius:6px;text-align:left;font-size:13px}
+.lore-show-map span {margin-left:auto;font-size:11px;color:#c7becd}
+.lore-show-map:hover {background:#3a3243}
+.lore-scenes {margin:0 0 12px}.lore-scenes summary {cursor:pointer}.lore-scenes .chips {margin-top:7px}
+.appearance-strip {display:flex;align-items:center;flex:0 0 auto;gap:14px;padding:8px clamp(14px,2.35vw,42px);border-bottom:1px solid #60513e;background:#302b25}
+.appearance-title {display:flex;align-items:center;gap:8px;min-width:0;color:var(--kind-color)}
+.appearance-title span {display:grid;gap:2px;min-width:0}
+.appearance-title small {font-size:10.5px;color:#d4c3ac}.appearance-title strong {font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appearance-strip select {max-width:min(48vw,460px);min-width:0;padding:5px 8px;border:1px solid #655743;border-radius:5px;background:#332e28;color:#f2e6d4;font:inherit;font-size:12px;text-overflow:ellipsis}
+.appearance-strip>button {margin-left:auto;display:flex;align-items:center;gap:5px;color:#e5d5bd;font-size:12px;white-space:nowrap;padding:6px;border-radius:4px}
+.appearance-strip>button:hover {background:#4b4033}
+.band-chip.focused-chip {border-color:var(--kind-color)}
+.lore-hit,.map-pane .node-card.lore-hit {border-color:#d7b47e;box-shadow:0 0 0 1px #d7b47e;background-color:#332e2a}
+.timeline-card.current-appearance {box-shadow:0 0 0 3px #d7b47e70}
+.lore-muted:not(:hover):not(:focus-within):not(.selected) {opacity:.44}
+.has-lore-focus .timeline-line {opacity:.4}
+.route-label-compact {display:none}
+.reader-body h3:focus {outline:none}
+@media(max-width:760px){
+  .statusbar:has(.unfinished-button) .legend {display:none}
+  .unfinished-button {margin-left:auto}.statusbar:has(.unfinished-button) .shortcut-button {margin-left:0}
+  .route-preview {padding:5px 7px;font-size:11px}
+  .route-location {min-width:85px}.route-location strong {max-width:100%}
+  .scene-preview {right:36px;width:26px;height:28px}
+  .appearance-strip {flex-wrap:wrap;gap:4px 8px;padding:6px 12px}
+  .appearance-strip select {order:2;width:100%;max-width:100%;font-size:13px}
+  .appearance-title {flex:1}
+}
+@media(max-width:365px) {
+  .route-label {display:none}
+  .route-label-compact {display:inline}
+}
 
 </style>
 </head>
@@ -647,6 +713,34 @@ function countWords(n, forms) {
 const nodeCount = n => countWords(n, ['узел','узла','узлов']);
 const edgeCount = n => countWords(n, ['связь','связи','связей']);
 const lineCount = n => countWords(n, ['реплика','реплики','реплик']);
+const sceneCount = n => countWords(n, ['сцена','сцены','сцен']);
+const needsContinuation = (node,hasExit) => node.type!=='ending' && !hasExit;
+function unfinishedScenes(p) {
+  const sources=new Set(p.edges.map(e=>e.from));
+  return p.nodes.filter(n=>needsContinuation(n,sources.has(n.id)));
+}
+
+// Explicit links always identify a record. An unambiguous speaker name also
+// locates that character's dialogue, including in projects made before this view.
+function loreOccurrences(p) {
+  const byLore=new Map(p.lore.map(item=>[item.id,[]])), byNode=new Map(), speakers=new Map();
+  const key=name=>name.trim().toLocaleLowerCase('ru').replace(/ё/g,'е');
+  for(const item of p.lore) {
+    if(item.kind!=='person')continue;
+    const name=key(item.title);
+    if(name)speakers.set(name,speakers.has(name)?null:item.id);
+  }
+  for(const n of p.nodes) {
+    const ids=new Set(n.lore);
+    for(const line of n.lines) {
+      const id=speakers.get(key(line.speaker));
+      if(id)ids.add(id);
+    }
+    byNode.set(n.id,ids);
+    for(const id of ids)byLore.get(id)?.push(n);
+  }
+  return {byLore,byNode};
+}
 function blankProject(title, genre = '') {
   return { id: uid(), title, genre, artwork: false, chapters: [{ id: uid(), title: 'Начало', start: null }], nodes: [], edges: [], lore: [] };
 }
@@ -908,12 +1002,12 @@ function cardMarkup(n) {
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
   const start = chapterById(ui.chapter)?.start === n.id;
-  const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):'';
+  const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):loreCardClass(n.id);
   const next=(n.type==='scene'||n.type==='dialogue')?`<div class="scene-next-actions"><button data-action="next-scene" data-id="${idAttr(n.id)}" aria-label="Добавить следующую сцену">${icon('plus',12)}Сцена</button><button data-action="new-choice" data-id="${idAttr(n.id)}" aria-label="Добавить выбор после сцены">${icon('branch',12)}Выбор</button></div>`:'';
   return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}${route}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
     ${start ? '<div class="start-label">'+icon('play',10)+'Начало</div>' : ''}
     ${n.art === 'radio' ? '<div class="node-art" role="img" aria-label="Старый приёмник в лесной сторожке"></div>' : ''}
-    <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
+    <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${needsContinuation(n,outputs)?'<span class="pending-mark" title="Без продолжения" aria-label="Без продолжения">'+icon('edit',12)+'</span>':''}${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
     <h3>${escapeHtml(n.title || 'Без названия')}</h3>
     ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}${next}</div>
     ${exits.length?`<button class="chapter-exit" data-action="other-chapters" data-id="${idAttr(n.id)}" title="Перейти к продолжению в другой главе">${icon('layers',11)}${chapterBadge}${icon('arrow',11)}</button>`:''}
@@ -935,7 +1029,7 @@ function renderMap() {
     <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
     ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся глава?</h3><div class="first-actions"><button class="btn primary" data-action="first-scene">'+icon('scene',16)+'Написать сцену</button><button class="btn subtle" data-action="new-choice">'+icon('choice',16)+'Начать с выбора</button></div></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
-    ${overview.path?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:''}
+    ${overview.memory?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:overview.loreId?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('book',14)}${esc(project().lore.find(l=>l.id===overview.loreId).title)}</button>${iconButton('clear-lore-focus','x','Снять подсветку лора')}</div>`:''}
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
     </section><aside id="inspector" class="inspector" aria-label="Детали узла"></aside>`;
   drawEdges(); renderInspector(); syncMapTools(); applyCamera();
@@ -1351,7 +1445,65 @@ function readRules(form) {
 function startReading() {
   const start=project().chapters.find(c=>c.start)?.start;
   if (!start) { toast('Добавьте первый узел, чтобы пройти историю'); return; }
-  playSession={start,path:[{node:start,via:null}]}; renderReading();
+  beginReading([{node:start,via:null}]);
+}
+function beginReading(entry,preview=null) {
+  playSession={entry,path:entry.slice(),preview};
+  renderReading();
+}
+function previewScene(id) {
+  const p=project(), index=storyIndex(p);
+  if(!index.nodes.has(id))return;
+  const marked=overview.loreId?null:validStoryPath(p,index,overview.path);
+  const at=marked?.findLastIndex(step=>step.node===id)??-1;
+  if(at>=0){beginReading(marked.slice(0,at+1),{id,source:'map'});return;}
+  if(marked?.length) {
+    const extended=findStoryPath(p,index,id,null,marked);
+    if(extended.path){beginReading(extended.path,{id,source:'map'});return;}
+  }
+  const result=findStoryPath(p,index,id);
+  if(result.path){beginReading(result.path,{id,source:marked?'other':'found'});return;}
+  const message=result.limited?'Автопоиск достиг предела сочетаний. Можно выбрать путь на карте или начать без прошлых решений.':'Сейчас условия закрывают путь к этой сцене. Можно посмотреть её без прошлых решений.';
+  modal('Проверить отсюда',`<div class="modal-body"><h3 class="preview-target">${esc(index.nodes.get(id).title)}</h3><p class="context-copy">${message}</p></div><div class="form-footer"><button class="btn subtle" data-action="preview-map">${icon('map',15)}На карту</button><button class="btn primary" data-action="preview-isolated" data-id="${idAttr(id)}">${icon('play',15)}Проверить отдельно</button></div>`);
+}
+function historyTitle(path,index) {
+  const choices=[];
+  for(const step of path) {
+    const edge=index.edges.get(step.via);
+    if(edge&&index.outgoing.get(edge.from).length>1)choices.push(edge.label||index.nodes.get(edge.to).title);
+  }
+  if(choices.length)return choices.join(' → ');
+  return path.length===1?'Начало в этой сцене':'Через «'+index.nodes.get(path.at(-2).node).title+'»';
+}
+function previewHeader(session,index) {
+  const {id,source}=session.preview;
+  const location=source==='map'?'Выбранная на карте ветка':source==='other'?'Другой доступный путь':source==='isolated'?'Проверка без прошлых решений':'Путь к сцене';
+  return `<details class="preview-history"><summary>${icon('branch',16)}<span><small>${location} · ${esc(index.nodes.get(id).title)}</small><strong>${esc(historyTitle(session.entry,index))}</strong></span><span class="switch-history">Сменить путь ${icon('chevron-down',13)}</span></summary><div class="preview-paths"></div></details>`;
+}
+function showPreviewHistories() {
+  const session=playSession, preview=session?.preview, host=dialog.querySelector('.preview-paths');
+  if(!preview || !host)return;
+  const p=project(), index=storyIndex(p);
+  if(!preview.paths) {
+    const {paths,limited}=searchStoryRoutes(p,index,preview.id,{limit:12});
+    const sameEntry=path=>path.length===session.entry.length && path.every((s,i)=>s.node===session.entry[i].node&&s.via===session.entry[i].via);
+    preview.paths=[session.entry,...paths.filter(path=>!sameEntry(path))];
+    preview.limited=limited;
+  }
+  const outgoing=index.outgoing.get(preview.id);
+  host.innerHTML=preview.paths.map((path,i)=>{
+    const memory=readingMemory(p,path), current=path===session.entry;
+    const choices=outgoing.filter(e=>transitionOpen(e,memory)).map(e=>e.label||index.nodes.get(e.to).title);
+    const detail=choices.length?'Дальше — '+choices.join(' · '):index.nodes.get(preview.id).type==='ending'?'Финал':outgoing.length?'Переходы закрыты':'Без продолжения';
+    return `<button data-action="preview-path" data-index="${i}" aria-pressed="${current}">${icon(current?'check':'branch',15)}<span><strong>${esc(historyTitle(path,index))}</strong><small>${esc(detail)}</small></span></button>`;
+  }).join('')+(preview.limited?'<small>Показана часть доступных путей.</small>':'')+'<button data-action="preview-map" class="text-action">'+icon('map',14)+'Выбрать путь на карте</button>';
+}
+function choosePreviewHistory(i) {
+  const preview=playSession?.preview, path=preview?.paths?.[i];
+  if(!path)return;
+  if(path!==playSession.entry)preview.source='chosen';
+  beginReading(path,preview);
+  dialog.querySelector('.preview-history summary')?.focus({preventScroll:true});
 }
 function followEdge(id) {
   if(!playSession)return;
@@ -1365,17 +1517,23 @@ function renderReading() {
   const memory=readingMemory(project(),playSession.path), eligible=outgoing.filter(e=>transitionOpen(e,memory));
   const conditional=outgoing.filter(e=>e.rules?.length);
   const explanation=conditional.length?`<details class="route-check"><summary>Проверить условия</summary>${conditional.map(e=>`<div><b>${esc(e.label||nodeById(e.to).title)}</b><small>${e.ruleMode==='any'?'Достаточно одного условия':'Нужны все условия'}</small>${e.rules.map(rule=>`<p class="${ruleMet(rule,memory)?'met':'unmet'}">${icon(ruleMet(rule,memory)?'check':'x',13)}${esc(ruleCaption(rule))}</p>`).join('')}</div>`).join('')}</details>`:'';
-  const end=outgoing.length?'На этом маршруте нет доступного перехода':'Конец ветки';
+  const unfinished=needsContinuation(n,outgoing.length);
+  const end=outgoing.length?'На этом маршруте нет доступного перехода':unfinished?'Сцена пока без продолжения':'Конец ветки';
   const choices=eligible.map(e=>{
     const dest=nodeById(e.to);
     return `<button data-action="read-next" data-id="${idAttr(e.id)}"><span>${esc(e.label||dest.title)}${n.chapter!==dest.chapter?'<small>'+esc(chapterName(dest.chapter))+'</small>':''}</span>${icon('arrow',16)}</button>`;
   }).join('');
   const body=`<div class="reader-image ${n.art==='radio'?'receiver':project().artwork?'forest':'abstract'}"><span>${typeTag(n.type)}</span></div>
-    <div class="reader-body"><div class="reader-location">${esc(chapterName(n.chapter))} <span> / </span> #${pad(n.no)}</div><h3>${esc(n.title)}</h3>${n.description?'<p class="reader-description">'+esc(n.description)+'</p>':''}
+    ${playSession.preview?previewHeader(playSession,storyIndex(project())):''}
+    <div class="reader-body"><div class="reader-location">${esc(chapterName(n.chapter))} <span> / </span> #${pad(n.no)}</div><h3 tabindex="-1">${esc(n.title)}</h3>${n.description?'<p class="reader-description">'+esc(n.description)+'</p>':''}
     ${n.lines.length?'<div class="reader-lines">'+n.lines.map(l=>`<div><b>${esc(l.speaker||'Рассказчик')}</b><p>${esc(l.text)}</p></div>`).join('')+'</div>':''}
-    <div class="reader-choices">${choices||'<div class="reader-end">'+icon('ending',16)+end+'</div>'}</div>${explanation}</div>
-    <div class="reader-controls"><button class="quiet-button" data-action="read-back" ${playSession.path.length<2?'disabled':''}>${icon('arrow-left',15)}Назад</button><button class="quiet-button" data-action="read-restart">${icon('reset',14)}Сначала</button><button class="quiet-button" data-action="read-route">${icon('eye',15)}Показать ветку</button><button class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon('map',14)}К узлу</button></div>`;
-  modal('Прохождение истории',body,'reader-modal');
+    <div class="reader-choices">${choices||'<div class="reader-end">'+icon(unfinished?'edit':'ending',16)+end+'</div>'}</div>${explanation}</div>
+    <div class="reader-controls"><button class="quiet-button" data-action="read-back" ${playSession.path.length<=playSession.entry.length?'disabled':''}>${icon('arrow-left',15)}Назад</button><button class="quiet-button" data-action="read-restart">${icon('reset',14)}${playSession.preview?'К началу проверки':'Сначала'}</button><button class="quiet-button" data-action="read-route">${icon('eye',15)}Показать ветку</button><button class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon('map',14)}К узлу</button></div>`;
+  modal(playSession.preview?'Проверка сцены':'Прохождение истории',body,'reader-modal');
+  dialog.scrollTop=0;
+  dialog.querySelector('.reader-body h3').focus({preventScroll:true});
+  const picker=dialog.querySelector('.preview-history');
+  picker?.addEventListener('toggle',()=>{if(picker.open&&picker.isConnected)showPreviewHistories();});
 }
 
 </script>
@@ -1435,9 +1593,11 @@ function previousFork(p,index,path) {
   return fork;
 }
 
-// Search for a single playable route. Only decisions referenced by conditions
-// on the way to this destination can distinguish two visits to the same scene.
-function findStoryPath(p,index,target,finalEdge=null) {
+// A single route needs only the rules on its way to the destination. For
+// preview alternatives, keep earlier choices that can affect later scenes too.
+function searchStoryRoutes(p,index,target,{finalEdge=null,prefix=null,limit=1}={}) {
+  if (!index.nodes.has(target)) return {paths:[]};
+  const alternatives=limit>1;
   const ancestors = new Set([target]), pending = [target];
   const flags = {node:new Map(),edge:new Map()};
   let nextFlag = 1n;
@@ -1460,21 +1620,38 @@ function findStoryPath(p,index,target,finalEdge=null) {
       }
     }
   }
+  if (alternatives) {
+    const future=new Set([target]), queue=[target];
+    for(let i=0;i<queue.length;i++) {
+      for(const edge of index.outgoing.get(queue[i])) {
+        collectRules(edge);
+        if(!future.has(edge.to)){future.add(edge.to);queue.push(edge.to);}
+      }
+    }
+  }
   const first = p.chapters.find(c => c.start)?.start;
-  let roots = [first];
-  if (!ancestors.has(first)) {
+  let roots = [first], initialMask=0n;
+  if (prefix?.length) {
+    const last=prefix.at(-1).node;
+    if(!ancestors.has(last))return {paths:[]};
+    roots=[last];
+    for(const step of prefix)initialMask|=(flags.node.get(step.node)||0n)|(flags.edge.get(step.via)||0n);
+  } else if (!ancestors.has(first)) {
     roots = [...ancestors].filter(id=>!index.incoming.get(id).length);
     if (!roots.length) roots = [p.chapters.find(c=>ancestors.has(c.start))?.start || target];
   }
-  const states = [], seen = new Map();
-  function enqueue(node,mask,parent,via) {
+  const states = [], seen = new Map(), paths=[];
+  let limited=false;
+  function enqueue(node,mask,parent,via,branch) {
     let masks = seen.get(node);
     if (!masks) { masks=new Set(); seen.set(node,masks); }
-    if (masks.has(mask)) return;
-    masks.add(mask);
-    states.push({node,mask,parent,via});
+    const key=alternatives?mask.toString(36)+'/'+branch:mask;
+    if (masks.has(key)) return;
+    if(states.length>=30000){limited=true;return;}
+    masks.add(key);
+    states.push({node,mask,parent,via,branch});
   }
-  for (const root of roots) enqueue(root,flags.node.get(root)||0n,-1,null);
+  for (const root of roots) enqueue(root,initialMask|(flags.node.get(root)||0n),-1,prefix?.at(-1)?.via||null,alternatives?'root/'+root:'');
   let activeMask = 0n;
   const memory = {
     nodes:index.nodes, edges:index.edges,
@@ -1485,6 +1662,7 @@ function findStoryPath(p,index,target,finalEdge=null) {
     const state = states[i];
     activeMask = state.mask;
     if (state.node===target && (!finalEdge || transitionOpen(finalEdge,memory))) {
+      if(paths.length===limit)return {paths,limited:true};
       const path=[];
       for (let cursor=i; cursor!==-1; cursor=states[cursor].parent) {
         const {node,via}=states[cursor];
@@ -1492,17 +1670,22 @@ function findStoryPath(p,index,target,finalEdge=null) {
       }
       path.reverse();
       if (finalEdge) path.push({node:finalEdge.to,via:finalEdge.id});
-      return {path};
+      paths.push(prefix?.length ? prefix.slice(0,-1).concat(path) : path);
+      if(!alternatives)return {paths,limited:false};
     }
-    // Bound interactive work for stories with combinatorially many choice histories.
-    if (i>=30000) return {limited:true};
-    for (const edge of index.outgoing.get(state.node)) {
+    const outgoing=index.outgoing.get(state.node);
+    for (const edge of outgoing) {
       if (!ancestors.has(edge.to) || !transitionOpen(edge,memory)) continue;
       const mask=activeMask | (flags.edge.get(edge.id)||0n) | (flags.node.get(edge.to)||0n);
-      enqueue(edge.to,mask,i,edge.id);
+      enqueue(edge.to,mask,i,edge.id,alternatives&&outgoing.length>1?'edge/'+edge.id:state.branch);
     }
   }
-  return {};
+  return {paths,limited};
+}
+
+function findStoryPath(p,index,target,finalEdge=null,prefix=null) {
+  const result=searchStoryRoutes(p,index,target,{finalEdge,prefix});
+  return {path:result.paths[0],limited:result.limited};
 }
 
 </script>
@@ -1513,7 +1696,7 @@ let overview = {};
 let lastDiagram = ui.page;
 
 function resetOverview() {
-  overview = {projectId:project().id,path:null,zoom:null,left:0,top:0,showLore:true,layout:null};
+  overview = {projectId:project().id,path:null,loreId:null,loreScene:null,zoom:null,left:0,top:0,showLore:true,layout:null};
 }
 
 function chapterColumns(nodes,chapter,index) {
@@ -1557,7 +1740,8 @@ function layoutTimeline(p,index) {
     const nodes=byChapter.get(chapter.id), columns=chapterColumns(nodes,chapter,index);
     const rows=columns.reduce((max,col)=>Math.max(max,col.length),1);
     const width=Math.max(268,(Math.max(1,columns.length)-1)*s.stepX+s.width+s.pad*2);
-    const loreIds=new Set(nodes.flatMap(n=>n.lore));
+    const loreIds=new Set();
+    for(const n of nodes)for(const id of overview.occurrences.byNode.get(n.id))loreIds.add(id);
     for (const id of loreIds) usedLore.add(id);
     const band={chapter,i,x,width,nodes,lore:[...loreIds].map(id=>lore.get(id)).filter(Boolean),color:BAND_COLORS[i%BAND_COLORS.length]};
     bands.push(band);
@@ -1584,7 +1768,7 @@ function timelineWire(a,b,ordinal,portOffset,graphTop) {
 
 function timelineBand(band) {
   const {chapter,i,x,width,color,lore}=band;
-  const chip=l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
+  const chip=l=>`<button class="band-chip kind-${l.kind}${l.id===overview.loreId?' focused-chip':''}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
   return `<section class="timeline-band" data-band="${idAttr(chapter.id)}" aria-label="${esc(chapterName(chapter.id))}" style="left:${x}px;width:${width}px;--band-color:${color}">
     <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3 title="${esc(chapter.title)}">${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Редактировать главу ${i+1}" title="Открыть карту главы">${icon('edit',13)}Редактировать</button></div></header>
     ${overview.showLore && lore.length?`<div class="band-lore" aria-label="Лор главы ${i+1}">${lore.map(chip).join('')}</div>`:''}
@@ -1597,9 +1781,11 @@ function timelineCard(n,point,index,memory,tip) {
   const onPath=memory?.visited.has(n.id);
   const caption=label?`<small title="${esc(label)}">${icon('branch',10)}${esc(label)}</small>`:'';
   const choice=n.type==='choice';
-  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
+  const unfinished=needsContinuation(n,index.outgoing.get(n.id).length);
+  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}${loreCardClass(n.id)}${n.id===overview.loreScene?' current-appearance':''}${unfinished?' unfinished-scene':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
     <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${choice?'':typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
     ${choice?`<button class="timeline-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" aria-label="${esc('Редактировать варианты «'+n.title+'»')}">${icon('choice',12)}Варианты · ${index.outgoing.get(n.id).length}${icon('edit',10)}</button>`:''}
+    <button class="scene-preview" data-action="preview-scene" data-id="${idAttr(n.id)}" aria-label="${esc('Проверить отсюда · '+n.title)}" title="Проверить отсюда">${icon('play',12)}</button>
     <button class="scene-eye" data-action="trace-to" data-id="${idAttr(n.id)}" aria-label="${esc('Показать путь к сцене «'+n.title+'»')}" title="Показать путь к этой сцене">${icon(onPath?'check':'eye',14)}</button></article>`;
 }
 
@@ -1626,15 +1812,66 @@ function timelineEdges(p,layout,memory) {
 
 function routeStrip(p,index,memory) {
   const path=overview.path;
-  if (!path) return '';
+  if (!memory || !path) return '';
   const last=index.nodes.get(path.at(-1).node), outgoing=index.outgoing.get(last.id);
   const options=outgoing.filter(edge=>transitionOpen(edge,memory));
-  let status=options.length?'Продолжить ветку':last.type==='ending'?'Финал':outgoing.length?'Нет доступных переходов':'Конец ветки';
+  let status=options.length?'Продолжить ветку':outgoing.length?'Нет доступных переходов':last.type==='ending'?'Финал':'Без продолжения';
   if(path[0].node!==p.chapters.find(c=>c.start)?.start)status+=' · от «'+index.nodes.get(path[0].node).title+'»';
   const back=previousFork(p,index,path);
   return `<div class="route-strip"><div class="route-location" aria-live="polite">${icon('eye',18)}<span><small>${esc(status)}</small><strong>${esc(last.title)}</strong></span></div>
     <div class="route-options">${options.map(edge=>`<button data-action="trace-edge" data-id="${idAttr(edge.id)}">${esc(edge.label||index.nodes.get(edge.to).title)}${icon('arrow',13)}</button>`).join('')}</div>
+    <button class="route-preview" data-action="preview-scene" data-id="${idAttr(last.id)}">${icon('play',14)}Проверить отсюда</button>
     ${path.length>1?`<button class="route-back" data-action="trace-back" title="Вернуться к предыдущему выбору">${icon('undo',14)}${back<0?'Шаг назад':'К развилке'}</button>`:''}</div>`;
+}
+
+function loreCardClass(id) {
+  if(!overview.loreMatches.size)return '';
+  return overview.loreMatches.has(id)?' lore-hit':' lore-muted';
+}
+
+function appearanceStrip(layout,item) {
+  const matches=overview.loreMatches;
+  const groups=layout.bands.map(b=>{
+    const nodes=b.nodes.filter(n=>matches.has(n.id)).sort((a,z)=>{
+      const first=layout.cards.get(a.id), second=layout.cards.get(z.id);
+      return first.x-second.x||first.y-second.y||a.no-z.no;
+    });
+    return {chapter:b.chapter.id,nodes};
+  }).filter(g=>g.nodes.length);
+  if(!matches.has(overview.loreScene))overview.loreScene=groups[0]?.nodes[0].id||null;
+  const options=groups.map(g=>`<optgroup label="${esc(chapterName(g.chapter))}">${g.nodes.map(n=>`<option value="${idAttr(n.id)}" ${n.id===overview.loreScene?'selected':''}>${esc(chapterName(g.chapter)+' · '+n.title)}</option>`).join('')}</optgroup>`).join('');
+  return `<div class="appearance-strip kind-${item.kind}"><div class="appearance-title">${icon(LORE_KINDS[item.kind].icon,18)}<span><small>${matches.size?sceneCount(matches.size):'Пока нет связанных сцен'}</small><strong>${esc(item.title)}</strong></span></div>${matches.size?`<select id="appearance-scene" aria-label="Перейти к появлению на карте">${options}</select>`:''}<button data-action="clear-lore-focus">${icon('x',14)}Снять подсветку</button></div>`;
+}
+
+function revealTimelineScene(id) {
+  const pane=byId('timeline-scroll');
+  const card=pane&&Array.from(pane.querySelectorAll('[data-scene]')).find(el=>el.dataset.scene===id);
+  card?.scrollIntoView({block:'nearest',inline:'nearest'});
+  return card;
+}
+
+function selectAppearance(id) {
+  if(!overview.loreMatches.has(id))return;
+  overview.loreScene=id;
+  const old=byId('timeline-scroll').querySelector('.current-appearance');
+  old?.classList.remove('current-appearance');
+  revealTimelineScene(id)?.classList.add('current-appearance');
+}
+
+function showLoreOnMap(id) {
+  overview.loreId=id;overview.loreScene=null;ui.page='timeline';
+  renderAll();
+  revealTimelineScene(overview.loreScene);
+  (byId('appearance-scene')||document.querySelector('.appearance-strip button'))?.focus({preventScroll:true});
+}
+
+function clearLoreFocus() {
+  overview.loreId=null;overview.loreScene=null;
+  renderAll();
+  if(ui.page==='timeline'){
+    if(overview.path)revealTimelineScene(overview.path.at(-1).node);
+    document.querySelector('[data-action="trace-toggle"]')?.focus({preventScroll:true});
+  }
 }
 
 function renderTimeline(index) {
@@ -1642,9 +1879,10 @@ function renderTimeline(index) {
   const layout=layoutTimeline(p,index);
   overview.layout=layout;
   const memory=overview.memory;
+  const item=p.lore.find(l=>l.id===overview.loreId);
   const unassigned=overview.showLore&&layout.unassigned.length?`<div class="loose-lore"><button data-action="loose-lore">${icon('book',14)}Общий лор <b>${layout.unassigned.length}</b></button><div>${layout.unassigned.map(l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`).join('')}</div></div>`:'';
-  byId('workspace').innerHTML=`${routeStrip(p,index,memory)}
-    <div class="timeline-scroll" id="timeline-scroll" tabindex="0" role="region" aria-label="Шкала сюжета по главам"><div class="timeline-sheet"><div class="timeline-board" style="width:${layout.width}px;height:${layout.height}px">
+  byId('workspace').innerHTML=`${item?appearanceStrip(layout,item):routeStrip(p,index,memory)}
+    <div class="timeline-scroll${overview.loreMatches.size?' has-lore-focus':''}" id="timeline-scroll" tabindex="0" role="region" aria-label="Шкала сюжета по главам"><div class="timeline-sheet"><div class="timeline-board" style="width:${layout.width}px;height:${layout.height}px">
       ${layout.bands.map(timelineBand).join('')}
     </div></div></div>${unassigned}
     <div class="timeline-foot"><label class="band-selector">${icon('timeline',16)}<select id="timeline-chapter" aria-label="Перейти к главе на шкале">${layout.bands.map(b=>`<option value="${idAttr(b.chapter.id)}">${esc(chapterName(b.chapter.id))}</option>`).join('')}</select></label>
@@ -1659,7 +1897,7 @@ function renderTimeline(index) {
   layout.graphTop=graphTop;
   board.style.height=layout.height+'px';
   board.style.setProperty('--graph-top',graphTop+'px');
-  board.insertAdjacentHTML('beforeend',timelineEdges(p,layout,memory)+p.nodes.map(n=>timelineCard(n,layout.cards.get(n.id),index,memory,overview.path?.at(-1).node)).join(''));
+  board.insertAdjacentHTML('beforeend',timelineEdges(p,layout,memory)+p.nodes.map(n=>timelineCard(n,layout.cards.get(n.id),index,memory,memory?overview.path.at(-1).node:null)).join(''));
   if (overview.zoom===null) overview.zoom=Math.max(narrowMap.matches ? .9 : .77,Math.min(1,(pane.clientWidth-20)/layout.width,(pane.clientHeight-12)/layout.height));
   sizeTimeline();
   pane.scrollTo(overview.left,overview.top);
@@ -1739,13 +1977,11 @@ function enableTimelinePan(pane) {
 function showTimelinePath(path,reveal=true) {
   if (overview.projectId!==project().id) resetOverview();
   const action=document.activeElement?.dataset.action, id=document.activeElement?.dataset.id;
+  overview.loreId=null;overview.loreScene=null;
   overview.path=path;
   ui.page='timeline';
   renderAll();
-  if (path && reveal) {
-    const card=Array.from(byId('timeline-scroll').querySelectorAll('[data-scene]')).find(el=>el.dataset.scene===path.at(-1).node);
-    card?.scrollIntoView({block:'nearest',inline:'nearest'});
-  }
+  if(path&&reveal)revealTimelineScene(path.at(-1).node);
   if(action && ['trace-edge','trace-to','trace-back','trace-toggle','read-route'].includes(action)) {
     const buttons=[...document.querySelectorAll('button[data-action]')];
     const focus=buttons.find(b=>b.dataset.action===action && b.dataset.id===id)
@@ -1755,7 +1991,7 @@ function showTimelinePath(path,reveal=true) {
 }
 
 function startTimelinePath() {
-  if (overview.path) {showTimelinePath(null);return;}
+  if (overview.path) {showTimelinePath(overview.loreId?overview.path:null);return;}
   const p=project(), start=p.chapters.find(c=>c.start)?.start;
   if (start) showTimelinePath(followUnambiguous(p,storyIndex(p),[{node:start,via:null}]));
 }
@@ -1764,7 +2000,7 @@ function traceTimeline(id,isEdge) {
   const p=project(), index=ui.page==='timeline'?overview.layout.index:storyIndex(p), edge=isEdge?index.edges.get(id):null;
   const target=edge?edge.from:id;
   let path=null;
-  if (overview.path) {
+  if (overview.memory) {
     const at=overview.path.findLastIndex(step=>step.node===target);
     if (at>=0) {
       const prefix=overview.path.slice(0,at+1);
@@ -2026,7 +2262,10 @@ function renderAll(fit=false) {
   const allChapters=ui.page==='timeline', diagram=allChapters||ui.page==='map';
   const story=allChapters||overview.path?storyIndex(p):null;
   if(overview.path)overview.path=validStoryPath(p,story,overview.path);
-  overview.memory=overview.path?readingMemory(p,overview.path):null;
+  overview.occurrences=loreOccurrences(p);
+  if(!overview.occurrences.byLore.has(overview.loreId)){overview.loreId=null;overview.loreScene=null;}
+  overview.loreMatches=new Set((overview.occurrences.byLore.get(overview.loreId)||[]).map(n=>n.id));
+  overview.memory=overview.path&&!overview.loreId?readingMemory(p,overview.path):null;
   if(diagram)lastDiagram=ui.page;
   if (!chapterById(ui.chapter)) ui.chapter=p.chapters[0].id;
   if (!nodeById(ui.selected) || nodeById(ui.selected).chapter!==ui.chapter) ui.selected=chapterById(ui.chapter).start || chapterNodes()[0]?.id || null;
@@ -2042,8 +2281,9 @@ function renderAll(fit=false) {
   const chapter=chapterById(ui.chapter), mainAction={map:['add-node','Добавить узел'],lore:['add-lore','Добавить запись'],dialogues:['add-line','Добавить реплику']}[navPage];
   const chapterNum=p.chapters.findIndex(c=>c.id===chapter.id)+1;
   const scope=diagram?`<div class="map-scope" role="group" aria-label="Вид карты"><button data-action="all-chapters" class="${allChapters?'current':''}" aria-pressed="${allChapters}">${icon('timeline',15)}Все главы</button><button data-action="chapters" class="chapter-switch ${allChapters?'':'current'}" aria-haspopup="true">${icon('layers',15)}<span>${allChapters?'По главам':'Глава '+chapterNum+'<span class="chapter-name"> · '+esc(chapter.title)+'</span>'}</span>${icon('chevron-down',12)}</button></div>`:'';
-  const focusLabel=overview.path?'Снять выделение':'Выделить ветку';
-  const actions=allChapters?`<button class="timeline-lore-toggle" data-action="timeline-lore" aria-pressed="${overview.showLore}" aria-label="Показывать лор глав" title="Показывать лор глав">${icon('book',16)}<span>Лор</span></button><button data-action="trace-toggle" class="btn route-toggle ${overview.path?'enabled':''}" aria-pressed="${!!overview.path}" ${p.nodes.length?'':'disabled'}>${icon('eye',17)}${focusLabel}</button>`:`<div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)')}${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button>`;
+  const focusLabel=overview.memory?'Снять выделение':overview.path?'К выделенной ветке':'Выделить ветку';
+  const compactFocus=overview.memory?'Снять':overview.path?'К ветке':'Ветка';
+  const actions=allChapters?`<button class="timeline-lore-toggle" data-action="timeline-lore" aria-pressed="${overview.showLore}" aria-label="Показывать лор глав" title="Показывать лор глав">${icon('book',16)}<span>Лор</span></button><button data-action="trace-toggle" class="btn route-toggle ${overview.memory?'enabled':''}" aria-label="${focusLabel}" title="${focusLabel}" aria-pressed="${!!overview.memory}" ${p.nodes.length?'':'disabled'}>${icon('eye',17)}<span class="route-label">${focusLabel}</span><span class="route-label-compact">${compactFocus}</span></button>`:`<div class="history-actions">${iconButton('undo','undo','Отменить (Ctrl+Z)')}${iconButton('redo','redo','Повторить (Ctrl+Shift+Z)')}</div><span class="tool-divider"></span><button class="btn primary add-button" data-action="${mainAction[0]}">${icon('plus',17)}${mainAction[1]}</button>`;
   byId('workbar').classList.toggle('diagram-bar',diagram);
   byId('workbar').innerHTML=`<div class="view-context"><h2>${views[navPage][0]}</h2>${scope}</div><div class="work-actions">${actions}</div>`;
   if (allChapters) { mapResize?.disconnect(); renderTimeline(story); }
@@ -2057,7 +2297,16 @@ function renderStatus() {
   const count=diagram ? nodeCount(here.size)+'<span class="status-dot">·</span>'+edgeCount(all?project().edges.length:project().edges.filter(e=>here.has(e.from)).length)
     : ui.page==='lore' ? countWords(project().lore.length,['запись','записи','записей']) : lineCount(project().nodes.reduce((n,v)=>n+v.lines.length,0));
   const legend=diagram ? Object.entries(NODE_TYPES).map(([key,t])=>`<span class="legend-item"><i class="legend-swatch swatch-${key}" style="--node-color:${t.color}"></i>${t.name}</span>`).join('') : '';
-  byId('statusbar').innerHTML=`<div class="status-count">${icon(diagram?'map':views[ui.page][1],14)}${count}</div><div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
+  const pending=diagram?unfinishedScenes(project()).length:0;
+  const openEnds=diagram?`<button class="unfinished-button" data-action="unfinished" title="Сцены без исходящих переходов во всех главах">${icon('edit',13)}Без продолжения <b>${pending}</b></button>`:'';
+  byId('statusbar').innerHTML=`<div class="status-count">${icon(diagram?'map':views[ui.page][1],14)}${count}</div>${openEnds}<div class="legend">${legend}</div><button class="shortcut-button" data-action="shortcuts">${icon('keyboard',16)}<span>Горячие клавиши</span></button>`;
+}
+function openUnfinishedScenes() {
+  const p=project(), pending=unfinishedScenes(p), groups=new Map();
+  for(const n of pending){if(!groups.has(n.chapter))groups.set(n.chapter,[]);groups.get(n.chapter).push(n);}
+  const list=p.chapters.filter(c=>groups.has(c.id)).map(c=>`<section><h3>${esc(chapterName(c.id))}</h3>${groups.get(c.id).map(n=>`<button data-action="jump" data-id="${idAttr(n.id)}">${typeTag(n.type)}<strong>${esc(n.title)}</strong>${icon('chevron-right',15)}</button>`).join('')}</section>`).join('');
+  const msg=p.nodes.length?'У каждой сцены есть продолжение или отметка «Финал».':'Здесь появятся сцены, которым нужно продолжение.';
+  modal('Без продолжения',`<div class="modal-body unfinished-list">${list||'<p>'+msg+'</p>'}</div>`);
 }
 function loreChip(item) { return `<span class="lore-chip kind-${item.kind}">${icon(LORE_KINDS[item.kind].icon,12)}${esc(item.title)}</span>`; }
 function renderInspector() {
@@ -2075,6 +2324,7 @@ function renderInspector() {
   panel.innerHTML=`<div class="inspector-head"><span>${icon('panel',16)}Детали узла</span>${iconButton('hide-inspector','x','Закрыть детали узла')}</div>
     <div class="inspector-scroll"><div class="inspector-id"><button class="type-edit" data-action="node-type" title="Изменить тип узла">${typeTag(n.type)}${icon('chevron-down',12)}</button><span class="inspector-ident"><span class="inspector-no">УЗЕЛ #${pad(n.no)}</span>${iconButton('toggle-important','spark',n.important?'Снять отметку «Ключевой момент»':'Отметить ключевой момент',`aria-pressed="${!!n.important}"`)}</span></div>
     <label class="field"><span>Название</span><input data-edit="title" data-id="${idAttr(n.id)}" value="${esc(n.title)}" maxlength="240" placeholder="Название узла"></label>
+    <button class="inspect-preview" data-action="preview-scene" data-id="${idAttr(n.id)}">${icon('play',14)}Проверить отсюда</button>
     ${n.type!=='ending'?`<button class="writer-from-scene" data-action="${n.type==='choice'?'edit-choice':'new-choice'}" data-id="${idAttr(n.id)}">${icon('branch',15)}${n.type==='choice'?'Редактировать варианты':'Добавить выбор после сцены'}</button>`:''}
     <label class="field"><span>Описание</span><textarea data-edit="description" data-id="${idAttr(n.id)}" rows="4" placeholder="Что происходит в этой точке истории?">${esc(n.description)}</textarea></label>
     <section class="inspector-section"><div class="section-line"><h3>${icon('book',15)}Связанный лор</h3>${iconButton('attach-lore','plus','Привязать запись лора')}</div>
@@ -2100,7 +2350,7 @@ function drawCollectionContent() {
   if (ui.page==='lore') {
     const items=project().lore.filter(l=>(ui.kind==='all'||l.kind===ui.kind)&&match(l.title,l.description));
     host.className='lore-grid'; host.innerHTML=items.map(l=>{
-      const used=project().nodes.filter(n=>n.lore.includes(l.id)).length;
+      const used=overview.occurrences.byLore.get(l.id).length;
       return `<button class="lore-card kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}"><div class="lore-card-top"><span class="lore-icon">${icon(LORE_KINDS[l.kind].icon,21)}</span><span>${LORE_KINDS[l.kind].name}</span>${icon('edit',14)}</div><h3>${esc(l.title)}</h3><p>${esc(l.description)}</p><div class="card-foot">${icon('link',13)}${nodeCount(used)}</div></button>`;
     }).join('');
     if (!items.length) host.innerHTML=emptyCollection(q||ui.kind!=='all'?'Записи не найдены':'Здесь будет лор истории',q||ui.kind!=='all'?'Измените условия поиска.':'Добавьте персонажа, место, предмет или событие.','book');
@@ -2118,7 +2368,7 @@ function rememberPlace() {
   const pane=mapPane(), w=pane?.clientWidth||lastPaneSize?.w, h=pane?.clientHeight||lastPaneSize?.h;
   const map=w&&h?{x:(w/2-camera.x)/camera.scale,y:(h/2-camera.y)/camera.scale,scale:camera.scale}:null;
   const place={diagram:lastDiagram,chapter:ui.chapter,selected:ui.selected,map,inspector:ui.inspector,
-    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path};
+    left:overview.left,top:overview.top,zoom:overview.zoom,lore:overview.showLore,path:overview.path,loreId:overview.loreId,loreScene:overview.loreScene};
   try {sessionStorage.setItem(placeKey(),JSON.stringify(place));} catch { /* The editor also works without tab storage. */ }
 }
 function resumePlace() {
@@ -2134,6 +2384,7 @@ function resumePlace() {
   if(Number.isFinite(place.left))overview.left=place.left;
   if(Number.isFinite(place.top))overview.top=place.top;
   if(typeof place.lore==='boolean')overview.showLore=place.lore;
+  if(project().lore.some(l=>l.id===place.loreId)){overview.loreId=place.loreId;overview.loreScene=place.loreScene;}
   if(Array.isArray(place.path)&&place.path.every(s=>typeof s?.node==='string'&&(s.via===null||typeof s.via==='string')))overview.path=place.path;
   const m=place.map, restore=ui.page==='map'&&m&&Number.isFinite(m.x)&&Number.isFinite(m.y)&&m.scale>=.17&&m.scale<=2.3;
   renderAll(!restore);
@@ -2188,9 +2439,10 @@ function openEdgeForm(source=ui.selected,target='',edge=null) {
 }
 function openLoreForm(id=null,attachTo=null) {
   const item=project().lore.find(l=>l.id===id)||{title:'',description:'',kind:'person'};
-  const used=project().nodes.filter(n=>n.lore.includes(id));
-  modal(id?'Запись лора':'Новая запись лора',`<form id="lore-form"><div class="modal-body"><label class="field"><span>Категория</span><select name="kind">${Object.entries(LORE_KINDS).map(([k,v])=>`<option value="${k}" ${item.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label><label class="field"><span>Название</span><input data-first required maxlength="200" name="title" value="${esc(item.title)}" placeholder="Имя или название"></label><label class="field"><span>Описание</span><textarea rows="5" name="description" placeholder="Какие детали важны для истории?">${esc(item.description)}</textarea></label>
-    ${used.length?'<div class="field"><span>На карте сюжета</span><div class="chips">'+used.map(n=>`<button type="button" class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${icon(NODE_TYPES[n.type].icon,13)}${esc(n.title)}</button>`).join('')+'</div></div>':''}${id?'<button type="submit" class="text-action" name="next" value="scene">'+icon('plus',14)+'Создать сцену с этой записью</button>':''}</div>${formFooter(id?'Сохранить':'Добавить запись',id?iconButton('delete-lore','trash','Удалить запись',`data-id="${idAttr(id)}"`):'')}</form>`);
+  const used=overview.occurrences.byLore.get(id)||[];
+  const appearances=id?`<button class="lore-show-map kind-${item.kind}" type="submit" name="next" value="appearances">${icon('map',16)}Где появляется <span>${sceneCount(used.length)}</span></button>`:'';
+  modal(id?'Запись лора':'Новая запись лора',`<form id="lore-form"><button type="submit" hidden></button><div class="modal-body"><label class="field"><span>Категория</span><select name="kind">${Object.entries(LORE_KINDS).map(([k,v])=>`<option value="${k}" ${item.kind===k?'selected':''}>${v.name}</option>`).join('')}</select></label><label class="field"><span>Название</span><input data-first required maxlength="200" name="title" value="${esc(item.title)}" placeholder="Имя или название"></label>${appearances}<label class="field"><span>Описание</span><textarea rows="5" name="description" placeholder="Какие детали важны для истории?">${esc(item.description)}</textarea></label>
+    ${used.length?'<details class="lore-scenes"><summary>Сцены по главам</summary><div class="chips">'+used.map(n=>`<button type="button" class="quiet-button" data-action="jump" data-id="${idAttr(n.id)}">${esc(chapterName(n.chapter)+' · '+n.title)}</button>`).join('')+'</div></details>':''}${id?'<button type="submit" class="text-action" name="next" value="scene">'+icon('plus',14)+'Создать сцену с этой записью</button>':''}</div>${formFooter(id?'Сохранить':'Добавить запись',id?iconButton('delete-lore','trash','Удалить запись',`data-id="${idAttr(id)}"`):'')}</form>`);
   modalContext={id,attachTo};
 }
 function openLorePicker() {
@@ -2254,6 +2506,8 @@ function handleAction(action,button,e) {
     case 'all-chapters': goPage('timeline');break;
     case 'timeline-lore': overview.showLore=!overview.showLore;renderAll();break;
     case 'loose-lore': openLooseLore();break;
+    case 'clear-lore-focus': clearLoreFocus();break;
+    case 'unfinished': openUnfinishedScenes();break;
     case 'timeline-first': case 'first-scene':
       if(action==='timeline-first')setChapter(id);
       pendingInsert={chapter:ui.chapter,side:'right'};addFromPalette('scene');break;
@@ -2293,9 +2547,16 @@ function handleAction(action,button,e) {
     case 'export': downloadProject();break;
     case 'import': byId('import-file').click();break;
     case 'play': startReading();break;
+    case 'preview-scene': previewScene(id);break;
+    case 'preview-isolated': if(nodeById(id))beginReading([{node:id,via:null}],{id,source:'isolated'});break;
+    case 'preview-path': choosePreviewHistory(Number(button.dataset.index));break;
+    case 'preview-map': {
+      const path=playSession?.entry;
+      closeModal();if(path)showTimelinePath(path);else goPage('timeline');break;
+    }
     case 'read-next': followEdge(id);break;
-    case 'read-back': if(playSession.path.length>1)playSession.path.pop();renderReading();break;
-    case 'read-restart': playSession.path=[{node:playSession.start,via:null}];renderReading();break;
+    case 'read-back': if(playSession&&playSession.path.length>playSession.entry.length){playSession.path.pop();renderReading();}break;
+    case 'read-restart': if(playSession){playSession.path=playSession.entry.slice();renderReading();}break;
     case 'chapters': showMenu(button,project().chapters.map((c,i)=>menuItem('chapter','layers',`Глава ${i+1} · ${c.title}`,`data-id="${idAttr(c.id)}"`,ui.page==='map'&&ui.chapter===c.id?icon('check',14):'')).join('')+'<hr>'+menuItem('add-chapter','plus','Добавить главу')+(ui.page==='map'?menuItem('rename-chapter','edit','Переименовать главу'):''));break;
     case 'chapter': setChapter(id);break;
     case 'add-chapter': openChapterForm(true);break;
@@ -2367,7 +2628,7 @@ document.addEventListener('pointerdown',e=>{
   if(!menu.hidden&&!menu.contains(e.target)&&!e.target.closest('[aria-haspopup],.type-edit,[data-action="node-options"]'))dismissMenu();
 });
 dialog.addEventListener('click',e=>{if(e.target===dialog)closeModal();});
-dialog.addEventListener('close',()=>{playSession=null;if(refreshAfterWriting&&!dialog.open){refreshAfterWriting=false;renderAll();}});
+dialog.addEventListener('close',()=>{if(dialog.open)return;playSession=null;if(refreshAfterWriting){refreshAfterWriting=false;renderAll();}});
 byId('import-file').addEventListener('change',e=>importProject(e.target.files[0]));
 document.addEventListener('change',e=>{
   if(e.target.matches('.outcome-mode')){
@@ -2375,6 +2636,7 @@ document.addEventListener('change',e=>{
     if(e.target.value==='existing')row.querySelector('.writer-search input')?.focus();
   }
   if(e.target.id==='timeline-chapter')scrollToTimelineChapter(e.target.value);
+  if(e.target.id==='appearance-scene')selectAppearance(e.target.value);
   if(e.target.matches('.rule-test')) {
     const kind=e.target.value.split('-')[0], ref=e.target.closest('.rule-row').querySelector('.rule-ref');
     const previous=ref.value;
@@ -2445,9 +2707,15 @@ dialog.addEventListener('submit',e=>{
       if(inserted){revealNode(inserted);renameOnCard(inserted);}else toast('Переход сохранён');break;
     }
     case 'lore-form': {
-      const item={id:ctx.id||uid(),kind:value('kind'),title:value('title'),description:value('description')};
-      changeProject(p=>{if(ctx.id)Object.assign(p.lore.find(l=>l.id===ctx.id),item);else p.lore.push(item);if(ctx.attachTo){const owner=nodeById(ctx.attachTo);owner.lore=[...new Set([...(ctx.pending||owner.lore),item.id])];}});
-      closeModal();renderAll();
+      const previous=project().lore.find(l=>l.id===ctx.id);
+      const text=k=>previous&&form.elements[k].value===form.elements[k].defaultValue?previous[k]:value(k);
+      const item={id:ctx.id||uid(),kind:value('kind'),title:text('title'),description:text('description')};
+      if(!previous||ctx.attachTo||['kind','title','description'].some(k=>previous[k]!==item[k])){
+        changeProject(p=>{if(previous)Object.assign(previous,item);else p.lore.push(item);if(ctx.attachTo){const owner=nodeById(ctx.attachTo);owner.lore=[...new Set([...(ctx.pending||owner.lore),item.id])];}});
+      }
+      closeModal();
+      if(e.submitter?.value==='appearances'){showLoreOnMap(item.id);break;}
+      renderAll();
       if(e.submitter?.value==='scene'){if(ctx.chapterForScene)ui.chapter=ctx.chapterForScene;openNodeForm(null);modalContext.loreId=item.id;}else toast('Запись сохранена');break;
     }
     case 'attach-form': changeProject(()=>{nodeById(ui.selected).lore=data.getAll('lore');});closeModal();renderAll();break;

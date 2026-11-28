@@ -53,9 +53,11 @@ function previousFork(p,index,path) {
   return fork;
 }
 
-// Search for a single playable route. Only decisions referenced by conditions
-// on the way to this destination can distinguish two visits to the same scene.
-function findStoryPath(p,index,target,finalEdge=null) {
+// A single route needs only the rules on its way to the destination. For
+// preview alternatives, keep earlier choices that can affect later scenes too.
+function searchStoryRoutes(p,index,target,{finalEdge=null,prefix=null,limit=1}={}) {
+  if (!index.nodes.has(target)) return {paths:[]};
+  const alternatives=limit>1;
   const ancestors = new Set([target]), pending = [target];
   const flags = {node:new Map(),edge:new Map()};
   let nextFlag = 1n;
@@ -78,21 +80,38 @@ function findStoryPath(p,index,target,finalEdge=null) {
       }
     }
   }
+  if (alternatives) {
+    const future=new Set([target]), queue=[target];
+    for(let i=0;i<queue.length;i++) {
+      for(const edge of index.outgoing.get(queue[i])) {
+        collectRules(edge);
+        if(!future.has(edge.to)){future.add(edge.to);queue.push(edge.to);}
+      }
+    }
+  }
   const first = p.chapters.find(c => c.start)?.start;
-  let roots = [first];
-  if (!ancestors.has(first)) {
+  let roots = [first], initialMask=0n;
+  if (prefix?.length) {
+    const last=prefix.at(-1).node;
+    if(!ancestors.has(last))return {paths:[]};
+    roots=[last];
+    for(const step of prefix)initialMask|=(flags.node.get(step.node)||0n)|(flags.edge.get(step.via)||0n);
+  } else if (!ancestors.has(first)) {
     roots = [...ancestors].filter(id=>!index.incoming.get(id).length);
     if (!roots.length) roots = [p.chapters.find(c=>ancestors.has(c.start))?.start || target];
   }
-  const states = [], seen = new Map();
-  function enqueue(node,mask,parent,via) {
+  const states = [], seen = new Map(), paths=[];
+  let limited=false;
+  function enqueue(node,mask,parent,via,branch) {
     let masks = seen.get(node);
     if (!masks) { masks=new Set(); seen.set(node,masks); }
-    if (masks.has(mask)) return;
-    masks.add(mask);
-    states.push({node,mask,parent,via});
+    const key=alternatives?mask.toString(36)+'/'+branch:mask;
+    if (masks.has(key)) return;
+    if(states.length>=30000){limited=true;return;}
+    masks.add(key);
+    states.push({node,mask,parent,via,branch});
   }
-  for (const root of roots) enqueue(root,flags.node.get(root)||0n,-1,null);
+  for (const root of roots) enqueue(root,initialMask|(flags.node.get(root)||0n),-1,prefix?.at(-1)?.via||null,alternatives?'root/'+root:'');
   let activeMask = 0n;
   const memory = {
     nodes:index.nodes, edges:index.edges,
@@ -103,6 +122,7 @@ function findStoryPath(p,index,target,finalEdge=null) {
     const state = states[i];
     activeMask = state.mask;
     if (state.node===target && (!finalEdge || transitionOpen(finalEdge,memory))) {
+      if(paths.length===limit)return {paths,limited:true};
       const path=[];
       for (let cursor=i; cursor!==-1; cursor=states[cursor].parent) {
         const {node,via}=states[cursor];
@@ -110,15 +130,20 @@ function findStoryPath(p,index,target,finalEdge=null) {
       }
       path.reverse();
       if (finalEdge) path.push({node:finalEdge.to,via:finalEdge.id});
-      return {path};
+      paths.push(prefix?.length ? prefix.slice(0,-1).concat(path) : path);
+      if(!alternatives)return {paths,limited:false};
     }
-    // Bound interactive work for stories with combinatorially many choice histories.
-    if (i>=30000) return {limited:true};
-    for (const edge of index.outgoing.get(state.node)) {
+    const outgoing=index.outgoing.get(state.node);
+    for (const edge of outgoing) {
       if (!ancestors.has(edge.to) || !transitionOpen(edge,memory)) continue;
       const mask=activeMask | (flags.edge.get(edge.id)||0n) | (flags.node.get(edge.to)||0n);
-      enqueue(edge.to,mask,i,edge.id);
+      enqueue(edge.to,mask,i,edge.id,alternatives&&outgoing.length>1?'edge/'+edge.id:state.branch);
     }
   }
-  return {};
+  return {paths,limited};
+}
+
+function findStoryPath(p,index,target,finalEdge=null,prefix=null) {
+  const result=searchStoryRoutes(p,index,target,{finalEdge,prefix});
+  return {path:result.paths[0],limited:result.limited};
 }

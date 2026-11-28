@@ -4,7 +4,7 @@ let overview = {};
 let lastDiagram = ui.page;
 
 function resetOverview() {
-  overview = {projectId:project().id,path:null,zoom:null,left:0,top:0,showLore:true,layout:null};
+  overview = {projectId:project().id,path:null,loreId:null,loreScene:null,zoom:null,left:0,top:0,showLore:true,layout:null};
 }
 
 function chapterColumns(nodes,chapter,index) {
@@ -48,7 +48,8 @@ function layoutTimeline(p,index) {
     const nodes=byChapter.get(chapter.id), columns=chapterColumns(nodes,chapter,index);
     const rows=columns.reduce((max,col)=>Math.max(max,col.length),1);
     const width=Math.max(268,(Math.max(1,columns.length)-1)*s.stepX+s.width+s.pad*2);
-    const loreIds=new Set(nodes.flatMap(n=>n.lore));
+    const loreIds=new Set();
+    for(const n of nodes)for(const id of overview.occurrences.byNode.get(n.id))loreIds.add(id);
     for (const id of loreIds) usedLore.add(id);
     const band={chapter,i,x,width,nodes,lore:[...loreIds].map(id=>lore.get(id)).filter(Boolean),color:BAND_COLORS[i%BAND_COLORS.length]};
     bands.push(band);
@@ -75,7 +76,7 @@ function timelineWire(a,b,ordinal,portOffset,graphTop) {
 
 function timelineBand(band) {
   const {chapter,i,x,width,color,lore}=band;
-  const chip=l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
+  const chip=l=>`<button class="band-chip kind-${l.kind}${l.id===overview.loreId?' focused-chip':''}" data-action="edit-lore" data-id="${idAttr(l.id)}" title="${esc(LORE_KINDS[l.kind].name+' · '+l.title)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`;
   return `<section class="timeline-band" data-band="${idAttr(chapter.id)}" aria-label="${esc(chapterName(chapter.id))}" style="left:${x}px;width:${width}px;--band-color:${color}">
     <header class="band-head"><span class="band-number">Глава ${pad(i+1)}</span><div><h3 title="${esc(chapter.title)}">${esc(chapter.title)}</h3><button class="band-open" data-action="chapter" data-id="${idAttr(chapter.id)}" aria-label="Редактировать главу ${i+1}" title="Открыть карту главы">${icon('edit',13)}Редактировать</button></div></header>
     ${overview.showLore && lore.length?`<div class="band-lore" aria-label="Лор главы ${i+1}">${lore.map(chip).join('')}</div>`:''}
@@ -88,9 +89,11 @@ function timelineCard(n,point,index,memory,tip) {
   const onPath=memory?.visited.has(n.id);
   const caption=label?`<small title="${esc(label)}">${icon('branch',10)}${esc(label)}</small>`:'';
   const choice=n.type==='choice';
-  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
+  const unfinished=needsContinuation(n,index.outgoing.get(n.id).length);
+  return `<article class="timeline-card${choice?' with-variants':''}${memory?(onPath?' on-path':' off-path'):''}${tip===n.id?' path-tip':''}${loreCardClass(n.id)}${n.id===overview.loreScene?' current-appearance':''}${unfinished?' unfinished-scene':''}" data-scene="${idAttr(n.id)}" style="left:${point.x}px;top:${point.y}px;${typedStyle(n)}">
     <button class="timeline-scene" data-action="jump" data-id="${idAttr(n.id)}" title="${esc('Открыть сцену «'+n.title+'» в главе')}">${choice?'':typeTag(n.type)}<strong>${esc(n.title)}</strong>${caption}</button>
     ${choice?`<button class="timeline-variants" data-action="edit-choice" data-id="${idAttr(n.id)}" aria-label="${esc('Редактировать варианты «'+n.title+'»')}">${icon('choice',12)}Варианты · ${index.outgoing.get(n.id).length}${icon('edit',10)}</button>`:''}
+    <button class="scene-preview" data-action="preview-scene" data-id="${idAttr(n.id)}" aria-label="${esc('Проверить отсюда · '+n.title)}" title="Проверить отсюда">${icon('play',12)}</button>
     <button class="scene-eye" data-action="trace-to" data-id="${idAttr(n.id)}" aria-label="${esc('Показать путь к сцене «'+n.title+'»')}" title="Показать путь к этой сцене">${icon(onPath?'check':'eye',14)}</button></article>`;
 }
 
@@ -117,15 +120,66 @@ function timelineEdges(p,layout,memory) {
 
 function routeStrip(p,index,memory) {
   const path=overview.path;
-  if (!path) return '';
+  if (!memory || !path) return '';
   const last=index.nodes.get(path.at(-1).node), outgoing=index.outgoing.get(last.id);
   const options=outgoing.filter(edge=>transitionOpen(edge,memory));
-  let status=options.length?'Продолжить ветку':last.type==='ending'?'Финал':outgoing.length?'Нет доступных переходов':'Конец ветки';
+  let status=options.length?'Продолжить ветку':outgoing.length?'Нет доступных переходов':last.type==='ending'?'Финал':'Без продолжения';
   if(path[0].node!==p.chapters.find(c=>c.start)?.start)status+=' · от «'+index.nodes.get(path[0].node).title+'»';
   const back=previousFork(p,index,path);
   return `<div class="route-strip"><div class="route-location" aria-live="polite">${icon('eye',18)}<span><small>${esc(status)}</small><strong>${esc(last.title)}</strong></span></div>
     <div class="route-options">${options.map(edge=>`<button data-action="trace-edge" data-id="${idAttr(edge.id)}">${esc(edge.label||index.nodes.get(edge.to).title)}${icon('arrow',13)}</button>`).join('')}</div>
+    <button class="route-preview" data-action="preview-scene" data-id="${idAttr(last.id)}">${icon('play',14)}Проверить отсюда</button>
     ${path.length>1?`<button class="route-back" data-action="trace-back" title="Вернуться к предыдущему выбору">${icon('undo',14)}${back<0?'Шаг назад':'К развилке'}</button>`:''}</div>`;
+}
+
+function loreCardClass(id) {
+  if(!overview.loreMatches.size)return '';
+  return overview.loreMatches.has(id)?' lore-hit':' lore-muted';
+}
+
+function appearanceStrip(layout,item) {
+  const matches=overview.loreMatches;
+  const groups=layout.bands.map(b=>{
+    const nodes=b.nodes.filter(n=>matches.has(n.id)).sort((a,z)=>{
+      const first=layout.cards.get(a.id), second=layout.cards.get(z.id);
+      return first.x-second.x||first.y-second.y||a.no-z.no;
+    });
+    return {chapter:b.chapter.id,nodes};
+  }).filter(g=>g.nodes.length);
+  if(!matches.has(overview.loreScene))overview.loreScene=groups[0]?.nodes[0].id||null;
+  const options=groups.map(g=>`<optgroup label="${esc(chapterName(g.chapter))}">${g.nodes.map(n=>`<option value="${idAttr(n.id)}" ${n.id===overview.loreScene?'selected':''}>${esc(chapterName(g.chapter)+' · '+n.title)}</option>`).join('')}</optgroup>`).join('');
+  return `<div class="appearance-strip kind-${item.kind}"><div class="appearance-title">${icon(LORE_KINDS[item.kind].icon,18)}<span><small>${matches.size?sceneCount(matches.size):'Пока нет связанных сцен'}</small><strong>${esc(item.title)}</strong></span></div>${matches.size?`<select id="appearance-scene" aria-label="Перейти к появлению на карте">${options}</select>`:''}<button data-action="clear-lore-focus">${icon('x',14)}Снять подсветку</button></div>`;
+}
+
+function revealTimelineScene(id) {
+  const pane=byId('timeline-scroll');
+  const card=pane&&Array.from(pane.querySelectorAll('[data-scene]')).find(el=>el.dataset.scene===id);
+  card?.scrollIntoView({block:'nearest',inline:'nearest'});
+  return card;
+}
+
+function selectAppearance(id) {
+  if(!overview.loreMatches.has(id))return;
+  overview.loreScene=id;
+  const old=byId('timeline-scroll').querySelector('.current-appearance');
+  old?.classList.remove('current-appearance');
+  revealTimelineScene(id)?.classList.add('current-appearance');
+}
+
+function showLoreOnMap(id) {
+  overview.loreId=id;overview.loreScene=null;ui.page='timeline';
+  renderAll();
+  revealTimelineScene(overview.loreScene);
+  (byId('appearance-scene')||document.querySelector('.appearance-strip button'))?.focus({preventScroll:true});
+}
+
+function clearLoreFocus() {
+  overview.loreId=null;overview.loreScene=null;
+  renderAll();
+  if(ui.page==='timeline'){
+    if(overview.path)revealTimelineScene(overview.path.at(-1).node);
+    document.querySelector('[data-action="trace-toggle"]')?.focus({preventScroll:true});
+  }
 }
 
 function renderTimeline(index) {
@@ -133,9 +187,10 @@ function renderTimeline(index) {
   const layout=layoutTimeline(p,index);
   overview.layout=layout;
   const memory=overview.memory;
+  const item=p.lore.find(l=>l.id===overview.loreId);
   const unassigned=overview.showLore&&layout.unassigned.length?`<div class="loose-lore"><button data-action="loose-lore">${icon('book',14)}Общий лор <b>${layout.unassigned.length}</b></button><div>${layout.unassigned.map(l=>`<button class="band-chip kind-${l.kind}" data-action="edit-lore" data-id="${idAttr(l.id)}">${icon(LORE_KINDS[l.kind].icon,12)}<span>${esc(l.title)}</span></button>`).join('')}</div></div>`:'';
-  byId('workspace').innerHTML=`${routeStrip(p,index,memory)}
-    <div class="timeline-scroll" id="timeline-scroll" tabindex="0" role="region" aria-label="Шкала сюжета по главам"><div class="timeline-sheet"><div class="timeline-board" style="width:${layout.width}px;height:${layout.height}px">
+  byId('workspace').innerHTML=`${item?appearanceStrip(layout,item):routeStrip(p,index,memory)}
+    <div class="timeline-scroll${overview.loreMatches.size?' has-lore-focus':''}" id="timeline-scroll" tabindex="0" role="region" aria-label="Шкала сюжета по главам"><div class="timeline-sheet"><div class="timeline-board" style="width:${layout.width}px;height:${layout.height}px">
       ${layout.bands.map(timelineBand).join('')}
     </div></div></div>${unassigned}
     <div class="timeline-foot"><label class="band-selector">${icon('timeline',16)}<select id="timeline-chapter" aria-label="Перейти к главе на шкале">${layout.bands.map(b=>`<option value="${idAttr(b.chapter.id)}">${esc(chapterName(b.chapter.id))}</option>`).join('')}</select></label>
@@ -150,7 +205,7 @@ function renderTimeline(index) {
   layout.graphTop=graphTop;
   board.style.height=layout.height+'px';
   board.style.setProperty('--graph-top',graphTop+'px');
-  board.insertAdjacentHTML('beforeend',timelineEdges(p,layout,memory)+p.nodes.map(n=>timelineCard(n,layout.cards.get(n.id),index,memory,overview.path?.at(-1).node)).join(''));
+  board.insertAdjacentHTML('beforeend',timelineEdges(p,layout,memory)+p.nodes.map(n=>timelineCard(n,layout.cards.get(n.id),index,memory,memory?overview.path.at(-1).node:null)).join(''));
   if (overview.zoom===null) overview.zoom=Math.max(narrowMap.matches ? .9 : .77,Math.min(1,(pane.clientWidth-20)/layout.width,(pane.clientHeight-12)/layout.height));
   sizeTimeline();
   pane.scrollTo(overview.left,overview.top);
@@ -230,13 +285,11 @@ function enableTimelinePan(pane) {
 function showTimelinePath(path,reveal=true) {
   if (overview.projectId!==project().id) resetOverview();
   const action=document.activeElement?.dataset.action, id=document.activeElement?.dataset.id;
+  overview.loreId=null;overview.loreScene=null;
   overview.path=path;
   ui.page='timeline';
   renderAll();
-  if (path && reveal) {
-    const card=Array.from(byId('timeline-scroll').querySelectorAll('[data-scene]')).find(el=>el.dataset.scene===path.at(-1).node);
-    card?.scrollIntoView({block:'nearest',inline:'nearest'});
-  }
+  if(path&&reveal)revealTimelineScene(path.at(-1).node);
   if(action && ['trace-edge','trace-to','trace-back','trace-toggle','read-route'].includes(action)) {
     const buttons=[...document.querySelectorAll('button[data-action]')];
     const focus=buttons.find(b=>b.dataset.action===action && b.dataset.id===id)
@@ -246,7 +299,7 @@ function showTimelinePath(path,reveal=true) {
 }
 
 function startTimelinePath() {
-  if (overview.path) {showTimelinePath(null);return;}
+  if (overview.path) {showTimelinePath(overview.loreId?overview.path:null);return;}
   const p=project(), start=p.chapters.find(c=>c.start)?.start;
   if (start) showTimelinePath(followUnambiguous(p,storyIndex(p),[{node:start,via:null}]));
 }
@@ -255,7 +308,7 @@ function traceTimeline(id,isEdge) {
   const p=project(), index=ui.page==='timeline'?overview.layout.index:storyIndex(p), edge=isEdge?index.edges.get(id):null;
   const target=edge?edge.from:id;
   let path=null;
-  if (overview.path) {
+  if (overview.memory) {
     const at=overview.path.findLastIndex(step=>step.node===target);
     if (at>=0) {
       const prefix=overview.path.slice(0,at+1);

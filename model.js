@@ -22,6 +22,34 @@ function countWords(n, forms) {
 const nodeCount = n => countWords(n, ['узел','узла','узлов']);
 const edgeCount = n => countWords(n, ['связь','связи','связей']);
 const lineCount = n => countWords(n, ['реплика','реплики','реплик']);
+const sceneCount = n => countWords(n, ['сцена','сцены','сцен']);
+const needsContinuation = (node,hasExit) => node.type!=='ending' && !hasExit;
+function unfinishedScenes(p) {
+  const sources=new Set(p.edges.map(e=>e.from));
+  return p.nodes.filter(n=>needsContinuation(n,sources.has(n.id)));
+}
+
+// Explicit links always identify a record. An unambiguous speaker name also
+// locates that character's dialogue, including in projects made before this view.
+function loreOccurrences(p) {
+  const byLore=new Map(p.lore.map(item=>[item.id,[]])), byNode=new Map(), speakers=new Map();
+  const key=name=>name.trim().toLocaleLowerCase('ru').replace(/ё/g,'е');
+  for(const item of p.lore) {
+    if(item.kind!=='person')continue;
+    const name=key(item.title);
+    if(name)speakers.set(name,speakers.has(name)?null:item.id);
+  }
+  for(const n of p.nodes) {
+    const ids=new Set(n.lore);
+    for(const line of n.lines) {
+      const id=speakers.get(key(line.speaker));
+      if(id)ids.add(id);
+    }
+    byNode.set(n.id,ids);
+    for(const id of ids)byLore.get(id)?.push(n);
+  }
+  return {byLore,byNode};
+}
 function blankProject(title, genre = '') {
   return { id: uid(), title, genre, artwork: false, chapters: [{ id: uid(), title: 'Начало', start: null }], nodes: [], edges: [], lore: [] };
 }

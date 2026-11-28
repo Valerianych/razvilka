@@ -93,12 +93,12 @@ function cardMarkup(n) {
     : n.type === 'dialogue' && n.lines.length ? icon('bubbles',13) + lineCount(n.lines.length)
     : n.type === 'ending' ? icon('ending',13) + 'Конец ветки' : '';
   const start = chapterById(ui.chapter)?.start === n.id;
-  const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):'';
+  const route=overview.memory?(overview.memory.visited.has(n.id)?' chapter-on-path':' chapter-off-path'):loreCardClass(n.id);
   const next=(n.type==='scene'||n.type==='dialogue')?`<div class="scene-next-actions"><button data-action="next-scene" data-id="${idAttr(n.id)}" aria-label="Добавить следующую сцену">${icon('plus',12)}Сцена</button><button data-action="new-choice" data-id="${idAttr(n.id)}" aria-label="Добавить выбор после сцены">${icon('branch',12)}Выбор</button></div>`:'';
   return `<article id="card-${idAttr(n.id)}" class="node-card node-${n.type}${selected ? ' selected' : ''}${n.art ? ' illustrated' : ''}${topPorts.has(n.id)?' top-port':''}${route}" style="left:${pos.x}px;top:${pos.y}px;width:${b.w}px;height:${b.h}px;${typedStyle(n)}" data-node="${idAttr(n.id)}" role="button" tabindex="0" aria-label="${escapeHtml(NODE_TYPES[n.type].name+' '+n.title)}" aria-pressed="${selected}">
     ${start ? '<div class="start-label">'+icon('play',10)+'Начало</div>' : ''}
     ${n.art === 'radio' ? '<div class="node-art" role="img" aria-label="Старый приёмник в лесной сторожке"></div>' : ''}
-    <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
+    <div class="node-content"><div class="node-meta">${typeTag(n.type)}<span class="node-number">${needsContinuation(n,outputs)?'<span class="pending-mark" title="Без продолжения" aria-label="Без продолжения">'+icon('edit',12)+'</span>':''}${n.important?'<span class="important-mark" title="Ключевой момент" aria-label="Ключевой момент">'+icon('spark',12)+'</span>':''}#${pad(n.no)}</span></div>
     <h3>${escapeHtml(n.title || 'Без названия')}</h3>
     ${footer ? '<div class="node-detail">'+footer+'</div>' : '<p class="node-summary">'+escapeHtml(n.description)+'</p>'}${next}</div>
     ${exits.length?`<button class="chapter-exit" data-action="other-chapters" data-id="${idAttr(n.id)}" title="Перейти к продолжению в другой главе">${icon('layers',11)}${chapterBadge}${icon('arrow',11)}</button>`:''}
@@ -120,7 +120,7 @@ function renderMap() {
     <button id="show-inspector" class="show-inspector floating icon-button" data-action="show-inspector" title="Открыть детали узла" aria-label="Открыть детали узла">${icon('panel',16)}<span>Детали</span></button>
     ${!nodes.length ? '<div class="empty-map"><div class="empty-symbol">'+icon('map',30)+'</div><h3>С чего начнётся глава?</h3><div class="first-actions"><button class="btn primary" data-action="first-scene">'+icon('scene',16)+'Написать сцену</button><button class="btn subtle" data-action="new-choice">'+icon('choice',16)+'Начать с выбора</button></div></div>' : ''}
     <div class="camera-controls floating">${iconButton('zoom-out','minus','Уменьшить масштаб')}<button id="zoom-value" class="zoom-number" data-action="actual-size" title="Масштаб 100%">100%</button>${iconButton('zoom-in','plus','Увеличить масштаб')}<span class="tool-divider"></span>${iconButton('fit','fit','Показать всю карту (F)')}</div>
-    ${overview.path?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:''}
+    ${overview.memory?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('eye',14)}Ветка на шкале</button>${iconButton('clear-chapter-route','x','Снять выделение ветки')}</div>`:overview.loreId?`<div class="chapter-route-note floating"><button data-action="all-chapters">${icon('book',14)}${esc(project().lore.find(l=>l.id===overview.loreId).title)}</button>${iconButton('clear-lore-focus','x','Снять подсветку лора')}</div>`:''}
     ${nodes.length ? '<button id="minimap" class="minimap" data-action="minimap" title="Перейти в эту область карты" aria-label="Мини-карта. Перейти в эту область"><svg id="mini-svg" aria-hidden="true"></svg></button>' : ''}
     </section><aside id="inspector" class="inspector" aria-label="Детали узла"></aside>`;
   drawEdges(); renderInspector(); syncMapTools(); applyCamera();
